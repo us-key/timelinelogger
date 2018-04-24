@@ -1,0 +1,45 @@
+{% extends "./_base.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+{{ forms.certifications.errors }}
+<script>
+	function add_group(name, pk){
+		var select = document.getElementById('id_group');
+		// <option value="pk">選択肢名</option>を作る
+		var option = document.createElement('option');
+		option.setAttribute('value', pk);
+		option.innerHTML = name;
+
+		// カテゴリの先頭に追加し、選択済みにする
+		select.add(option);
+		select.options[select.options.length-1].selected = true;
+	}
+</script>
+<div class="container">
+	<div class="row">
+		<div class="col-12">
+			<h2 class="text-center">Register Task</h2>
+			<a href="javascript:void(0);"
+			   onclick="window.open('{% url 'popup_group_create' %}','subwin','width=500,height=500');">
+			   add group
+			</a>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-12">
+			<form method="post" id="obj_form">
+			{% crispy form %}
+
+			{% csrf_token %}
+			</form>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-12">
+			<a class="btn btn-outline-secondary" href="{% url 'index' %}">back</a>
+			<a class="btn btn-outline-secondary save" href="#">save</a>
+		</div>
+	</div>
+</div>
+
+{% endblock %}

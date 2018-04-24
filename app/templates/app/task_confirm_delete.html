@@ -1,0 +1,22 @@
+{% extends "./_base.html" %}
+{% block content %}
+{% load crispy_forms_tags %}
+<div class="container">
+	<h2 class="text-center">Delete Task</h2>
+	<p>Would you delete this task?</p>
+	<form action="" method="post">
+		{% csrf_token %}
+		{% include "./_task_info.html" %}
+		<div class="row">
+			<div class="col-12">
+				<div class="float-right">
+					<a class="btn btn-outline-secondary"
+					   href="{% url 'index' %}">back</a>
+					<input type="submit" class="btn btn-outline-secondary"
+						   value="delete"/>
+				</div>
+			</div>
+		</div>
+	</form>
+</div>
+{% endblock %}

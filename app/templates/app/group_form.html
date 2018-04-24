@@ -1,0 +1,23 @@
+{% extends "./_base_withoutnav.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+{{ forms.certifications.errors }}
+<div class="container">
+	<div class="row">
+		<div class="col-12">
+			<h2 class="text-center">Register Group</h2>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-12">
+			<form method="post" id="obj_form">{% crispy form %}</form>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-12">
+			<a class="btn btn-outline-secondary save" href="#">save</a>
+		</div>
+	</div>
+</div>
+
+{% endblock %}

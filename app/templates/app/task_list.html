@@ -1,0 +1,29 @@
+{% extends "./_base.html" %}
+{% block content %}
+{% load crispy_forms_tags %}
+<div class="container">
+	<div class="row">
+		<div class="col-12">
+			<a href="{% url 'task_create' %}">Add Task</a>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-12">
+			<ul>
+				{% for task in object_list %}
+				<li>
+					<a href="{% url 'task_update' task.pk %}">
+						[{{task.group}}]{{task.name}}
+					</a>
+					<a href="{% url 'task_delete' task.pk %}">
+						[delete]
+					</a>
+				</li>
+				{% empty %}
+				<li>No tasks</li>
+				{% endfor %}
+			</ul>
+		</div>
+	</div>
+</div>
+{% endblock %}
