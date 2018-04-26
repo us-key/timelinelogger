@@ -123,3 +123,7 @@ STATIC_URL = '/static/'
 
 # django-crispy-forms 設定
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
+
+LOGIN_URL='/login'
+LOGIN_REDIRECT_URL='/task'
+LOGOUT_REDIRECT_URL='/login'

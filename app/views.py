@@ -27,18 +27,18 @@ class TaskCreateView(LoginRequiredMixin, CreateView):
         task = form.save(commit=False)
         task.user = self.request.user
         task.save()
-        return redirect('index')
+        return redirect('task_list')
 
 # task更新画面
 class TaskUpdateView(LoginRequiredMixin, UpdateView):
     model = Task
     form_class=TaskForm
-    success_url = reverse_lazy('index')
+    success_url = reverse_lazy('task_list')
 
 # task削除画面
 class TaskDeleteView(LoginRequiredMixin, DeleteView):
     model = Task
-    success_url = reverse_lazy('index')
+    success_url = reverse_lazy('task_list')
 
 # popup group登録画面
 class PopupGroupCreateView(LoginRequiredMixin, CreateView):
