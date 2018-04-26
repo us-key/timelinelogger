@@ -3,11 +3,19 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.views.generic.list import ListView
 from django.views.generic.edit import CreateView,UpdateView,DeleteView
+from django.contrib.auth.models import User
 
 from .models import Task,Group
-from .forms import TaskForm,GroupForm
+from .forms import UserForm,TaskForm,GroupForm
 
 # Create your views here.
+
+# user登録画面
+class UserCreateView(CreateView):
+    template_name='app/user_form.html'
+    model = User
+    form_class = UserForm
+    success_url = reverse_lazy('login')
 
 # task一覧画面
 class TaskListView(LoginRequiredMixin, ListView):

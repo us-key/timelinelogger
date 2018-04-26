@@ -1,6 +1,6 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
-from .views import TaskListView,TaskCreateView,TaskUpdateView,TaskDeleteView,PopupGroupCreateView
+from .views import UserCreateView,TaskListView,TaskCreateView,TaskUpdateView,TaskDeleteView,PopupGroupCreateView
 
 urlpatterns = [
     # index
@@ -9,6 +9,8 @@ urlpatterns = [
     path('login/', auth_views.login, {'template_name': 'app/login.html'}, name='login'),
     # logout
     path('logout/', auth_views.logout, {'template_name': 'app/logged_out.html'}, name='logout'),
+    # user登録画面
+    path('user/create/', UserCreateView.as_view(), name='user_create'),
 
 
     # task一覧画面
