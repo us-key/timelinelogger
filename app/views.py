@@ -17,6 +17,12 @@ class UserCreateView(CreateView):
     form_class = UserForm
     success_url = reverse_lazy('login')
 
+# user削除画面
+class UserDeleteView(LoginRequiredMixin, DeleteView):
+    template_name='app/user_confirm_delete.html'
+    model = User
+    success_url = reverse_lazy('login')
+
 # task一覧画面
 class TaskListView(LoginRequiredMixin, ListView):
     model = Task

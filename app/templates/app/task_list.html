@@ -4,7 +4,7 @@
 <div class="container">
 	<div class="row">
 		<div class="col-12">
-			<a href="{% url 'task_create' %}">Add Task</a>
+			<a href="{% url 'task_create' %}">タスク追加</a>
 		</div>
 	</div>
 	<div class="row">
@@ -16,11 +16,11 @@
 						[{{task.group}}]{{task.name}}
 					</a>
 					<a href="{% url 'task_delete' task.pk %}">
-						[delete]
+						[×]
 					</a>
 				</li>
 				{% empty %}
-				<li>No tasks</li>
+				<li>タスクはありません</li>
 				{% endfor %}
 			</ul>
 		</div>

@@ -2,18 +2,17 @@
 {% block content %}
 {% load crispy_forms_tags %}
 <div class="container">
-	<h2 class="text-center">タスク削除</h2>
-	<p>削除してよいですか？</p>
+	<h2 class="text-center">退会</h2>
+	<p>退会すると登録したタスクがすべて削除されます。よろしいですか？</p>
 	<form action="" method="post">
 		{% csrf_token %}
-		{% include "./_task_info.html" %}
 		<div class="row">
 			<div class="col-12">
 				<div class="float-right">
 					<a class="btn btn-outline-secondary"
 					   href="{% url 'task_list' %}">戻る</a>
 					<input type="submit" class="btn btn-outline-secondary"
-						   value="削除"/>
+						   value="退会する"/>
 				</div>
 			</div>
 		</div>
