@@ -37,6 +37,11 @@ class TaskCreateView(LoginRequiredMixin, CreateView):
     form_class = TaskForm
 #     success_url = reverse_lazy('index')
 
+    def get_form_kwargs(self):
+        kwargs = super(TaskCreateView, self).get_form_kwargs()
+        kwargs['group_queryset'] = Group.objects.filter(user = self.request.user)
+        return kwargs
+
     def form_valid(self, form):
         task = form.save(commit=False)
         task.user = self.request.user

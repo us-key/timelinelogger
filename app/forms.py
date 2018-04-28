@@ -15,6 +15,13 @@ class TaskForm(forms.ModelForm):
         model = Task
         fields = ('name','group','remarks',)
 
+    def __init__(self, *args, **kwargs):
+        self.base_fields['group'].queryset = self.get_group_list(kwargs)
+        super(TaskForm, self).__init__(*args, **kwargs)
+
+    def get_group_list(self, kwargs):
+        return kwargs.pop('group_queryset')
+
 class GroupForm(forms.ModelForm):
     class Meta:
         model = Group
