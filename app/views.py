@@ -54,6 +54,17 @@ class TaskUpdateView(LoginRequiredMixin, UpdateView):
     form_class=TaskForm
     success_url = reverse_lazy('task_list')
 
+    def get_form_kwargs(self):
+        kwargs = super(TaskUpdateView, self).get_form_kwargs()
+        kwargs['group_queryset'] = Group.objects.filter(user = self.request.user)
+        return kwargs
+
+    def form_valid(self, form):
+        task = form.save(commit=False)
+        task.user = self.request.user
+        task.save()
+        return redirect('task_list')
+
 # task削除画面
 class TaskDeleteView(LoginRequiredMixin, DeleteView):
     model = Task
