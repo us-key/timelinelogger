@@ -26,7 +26,8 @@ urlpatterns = [
     # (popup)group作成
     path('popup/group/create/', PopupGroupCreateView.as_view(), name='popup_group_create'),
 
-
+    # log-stopwatch
+    path('task_stopwatch/<int:pk>/', TaskStopwatchView.as_view(), name='task_stopwatch'),
 
 
     ]
