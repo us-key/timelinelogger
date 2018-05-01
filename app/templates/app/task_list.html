@@ -13,7 +13,7 @@
 				{% for task in object_list %}
 				<li>
 					<a href="javascript:void(0);"
-					   onclick="window.open('{% url 'task_stopwatch' '%}','subwin','width=500,height=500');">
+					   onclick="window.open('{% url 'task_stopwatch' task.pk %}','subwin','width=500,height=500');">
 						▶
 					</a>
 					<a href="{% url 'task_update' task.pk %}">

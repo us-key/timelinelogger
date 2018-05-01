@@ -1,4 +1,4 @@
-from django.shortcuts import render,redirect
+from django.shortcuts import render,redirect,get_object_or_404
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.views.generic.list import ListView
@@ -85,3 +85,10 @@ class PopupGroupCreateView(LoginRequiredMixin, CreateView):
             'function_name':'add_group',
             }
         return render(self.request, 'app/close.html', context)
+
+# popup stopwatch画面
+def task_stopwatch(request, pk):
+    #urlで指定されたkeyからタスクを取得、なければ404
+    task = get_object_or_404(Task, pk=pk)
+
+    return render(request, 'app/task_stopwatch.html', {'task': task})

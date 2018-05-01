@@ -1,6 +1,7 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
 from .views import UserCreateView,UserDeleteView,TaskListView,TaskCreateView,TaskUpdateView,TaskDeleteView,PopupGroupCreateView
+from . import views
 
 urlpatterns = [
     # index
@@ -27,7 +28,7 @@ urlpatterns = [
     path('popup/group/create/', PopupGroupCreateView.as_view(), name='popup_group_create'),
 
     # log-stopwatch
-    path('task_stopwatch/<int:pk>/', TaskStopwatchView.as_view(), name='task_stopwatch'),
+    path('task_stopwatch/<int:pk>/', views.task_stopwatch, name='task_stopwatch'),
 
 
     ]
