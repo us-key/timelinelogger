@@ -5,7 +5,7 @@ from django.views.generic.list import ListView
 from django.views.generic.edit import CreateView,UpdateView,DeleteView
 from django.contrib.auth.models import User
 
-from .models import Task,Group
+from .models import Task,Group,Log
 from .forms import UserForm,TaskForm,GroupForm
 
 # Create your views here.
@@ -90,5 +90,7 @@ class PopupGroupCreateView(LoginRequiredMixin, CreateView):
 def task_stopwatch(request, pk):
     #urlで指定されたkeyからタスクを取得、なければ404
     task = get_object_or_404(Task, pk=pk)
+    # log作成
+    log = Log.objects.create(task=task)
 
-    return render(request, 'app/task_stopwatch.html', {'task': task})
+    return render(request, 'app/task_stopwatch.html', {'task': task, 'log': log})

@@ -127,3 +127,6 @@ CRISPY_TEMPLATE_PACK = 'bootstrap4'
 LOGIN_URL='/login'
 LOGIN_REDIRECT_URL='/task'
 LOGOUT_REDIRECT_URL='/login'
+
+# format設定
+FORMAT_MODULE_PATH = 'app.formats'
