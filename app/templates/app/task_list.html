@@ -1,6 +1,10 @@
 {% extends "./_base.html" %}
 {% block content %}
 {% load crispy_forms_tags %}
+<script>
+	function add_log(name, pk){
+	}
+</script>
 <div class="container">
 	<div class="row">
 		<div class="col-12">
@@ -17,7 +21,7 @@
 						▶
 					</a>
 					<a href="{% url 'task_update' task.pk %}">
-						[{{task.group}}]{{task.name}}
+						[{{task.group}}]{{task}}
 					</a>
 					<a href="{% url 'task_delete' task.pk %}">
 						[×]

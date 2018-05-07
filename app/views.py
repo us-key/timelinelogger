@@ -4,6 +4,7 @@ from django.urls import reverse_lazy
 from django.views.generic.list import ListView
 from django.views.generic.edit import CreateView,UpdateView,DeleteView
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 from .models import Task,Group,Log
 from .forms import UserForm,TaskForm,GroupForm
@@ -88,9 +89,20 @@ class PopupGroupCreateView(LoginRequiredMixin, CreateView):
 
 # popup stopwatch画面
 def task_stopwatch(request, pk):
-    #urlで指定されたkeyからタスクを取得、なければ404
-    task = get_object_or_404(Task, pk=pk)
-    # log作成
-    log = Log.objects.create(task=task)
+    if request.method == "POST":
+        log = Log.objects.filter(pk=request.POST['task_pk']).first()
+        log.ended = timezone.now()
+        log.save()
+        context = {
+            'object_name': "",
+            'object_pk': "",
+            'function_name': 'add_log',
+            }
+        return render(request, 'app/close.html', context)
+    else:
+        #urlで指定されたkeyからタスクを取得、なければ404
+        task = get_object_or_404(Task, pk=pk)
+        # log作成
+        log = Log.objects.create(task=task)
 
-    return render(request, 'app/task_stopwatch.html', {'task': task, 'log': log})
+        return render(request, 'app/task_stopwatch.html', {'task': task, 'log': log})

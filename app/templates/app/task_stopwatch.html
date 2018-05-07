@@ -1,8 +1,19 @@
 {% extends "./_base_withoutnav.html" %}
 {% block content %}
-<script type="text/javascript">
+<div class="container">
+	<div class="row">
+		<div class="col-12">
+			<h2 class="text-center">[{{ task.group }}]{{ task }}</h2>
+			<form method="post" id="obj_form">
+				<p>経過</p>
+				<p>開始時刻：{{ log.started }}</p>
+				<input type="hidden" value="{{log.pk}}"
+					   name="task_pk" id="task_pk_id"/>
+				<a class="btn btn-outline-secondary save" href="#">終了</a>
+			{% csrf_token %}
+			</form>
+		</div>
+	</div>
+</div>
 
-</script>
-{{ task }}
-{{ log.started }}
 {% endblock %}
