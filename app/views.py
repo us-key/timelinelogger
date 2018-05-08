@@ -31,7 +31,6 @@ class TaskListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         return Task.objects.filter(finished=False, user=self.request.user.id).order_by('group')
 
-
 # task登録画面
 class TaskCreateView(LoginRequiredMixin, CreateView):
     model = Task
@@ -106,3 +105,11 @@ def task_stopwatch(request, pk):
         log = Log.objects.create(task=task)
 
         return render(request, 'app/task_stopwatch.html', {'task': task, 'log': log})
+
+# log一覧画面
+class LogListView(LoginRequiredMixin, ListView):
+    model = Log
+
+    def get_queryset(self):
+        return Log.objects.filter(task__user=self.request.user.id).order_by('-started')
+

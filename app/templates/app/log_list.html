@@ -1,0 +1,31 @@
+{% extends "./_base.html" %}
+{% block content %}
+<div class="container">
+	<div class="row">
+	<div class="col-12">
+		<h2 class="text-center">ログ一覧</h2>
+	</div>
+	{% for log in object_list %}
+		<div class="col-3">
+			<a href="{% url 'task_update' log.task.pk %}">
+				[{{ log.task.group }}]{{ log.task }}
+			</a>
+		</div>
+		<div class="col-4">
+			{{ log.started }}
+		</div>
+		<div class="col-1">
+			～
+		</div>
+		<div class="col-4">
+			{{ log.ended }}
+		</div>
+	{% empty %}
+		<div class="col-12">
+			ログがありません
+		</div>
+	{% endfor %}
+	</div>
+</div>
+
+{% endblock %}

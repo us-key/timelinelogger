@@ -8,11 +8,16 @@
 <div class="container">
 	<div class="row">
 		<div class="col-12">
-			<a href="{% url 'task_create' %}">タスク追加</a>
+			<h2 class="text-center">タスク一覧</h2>
+		</div>
+		<div class="col-12">
+			<a class="btn btn-outline-secondary" href="{% url 'task_create' %}">タスク追加</a>
+			<a class="btn btn-outline-secondary" href="#">完了済タスク表示</a>
+			<a class="btn btn-outline-secondary" href="{% url 'log_list' %}">ログ</a>
 		</div>
 	</div>
 	<div class="row">
-		<div class="col-12">
+		<div 	="col-12">
 			<ul>
 				{% for task in object_list %}
 				<li>
