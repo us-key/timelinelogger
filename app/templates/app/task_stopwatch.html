@@ -5,7 +5,14 @@
 		<div class="col-12">
 			<h2 class="text-center">[{{ task.group }}]{{ task }}</h2>
 			<form method="post" id="obj_form">
-				<p>経過</p>
+				<p>
+					<span>経過：</span>
+					<span id="hour">00</span>
+					<span>:</span>
+					<span id="minute">00</span>
+					<span>:</span>
+					<span id="second">00</span>
+				</p>
 				<p>開始時刻：{{ log.started }}</p>
 				<input type="hidden" value="{{log.pk}}"
 					   name="task_pk" id="task_pk_id"/>
@@ -15,5 +22,32 @@
 		</div>
 	</div>
 </div>
+<script>
+	window.onload = stopwatch;
+	var stopwatchTime, startTime, stopwatchTimeAdd = 0;
+	function stopwatch() {
+		if (startTime === undefined) {
+			startTime = new Date().getTime();
+		}
+		var nowDate = new Date();
+		var stopwatchTime = nowDate.getTime() - startTime + stopwatchTimeAdd;
+		var stopwatchSecond = Math.floor(stopwatchTime / 1000) % 60;
+		var stopwatchMinute = Math.floor(stopwatchTime / 1000 / 60) % 60;
+		var stopwatchHour = Math.floor(Math.floor(stopwatchTime / 1000 / 60) / 60);
+		if (stopwatchSecond < 10) {
+			stopwatchSecond = '0' + stopwatchSecond;
+		}
+		if (stopwatchMinute < 10) {
+			stopwatchMinute = '0' + stopwatchMinute;
+		}
+		if (stopwatchHour < 10) {
+			stopwatchHour = '0' + stopwatchHour;
+		}
 
+		document.getElementById('second').innerHTML = stopwatchSecond;
+		document.getElementById('minute').innerHTML = stopwatchMinute;
+		document.getElementById('hour').innerHTML = stopwatchHour;
+		$stopwatch = setTimeout("stopwatch()", 1);
+	}
+</script>
 {% endblock %}
