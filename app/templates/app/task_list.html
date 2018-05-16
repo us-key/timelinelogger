@@ -1,10 +1,15 @@
 {% extends "./_base.html" %}
 {% block content %}
 {% load crispy_forms_tags %}
+{% load custom_filters %}
 <script>
 	function add_log(name, pk){
 	}
+	$('.task_filter'),on('click', function(e){
+		$('#task_filter_form').submit();
+	})
 </script>
+<form method="get" action="" id="task_filter_form">
 <div class="container">
 	<div class="row">
 		<div class="col-12">
@@ -12,31 +17,49 @@
 		</div>
 		<div class="col-12">
 			<a class="btn btn-outline-secondary" href="{% url 'task_create' %}">タスク追加</a>
-			<a class="btn btn-outline-secondary" href="#">完了済タスク表示</a>
+			<button class="btn btn-outline-secondary">
+				{% if request.GET.contain_fin != '1/'%}
+				完了済タスク表示
+				{% else %}
+				未完了タスクのみ表示
+				{% endif %}
+			</button>
 			<a class="btn btn-outline-secondary" href="{% url 'log_list' %}">ログ</a>
 		</div>
 	</div>
 	<div class="row">
-		<div 	="col-12">
-			<ul>
-				{% for task in object_list %}
-				<li>
-					<a href="javascript:void(0);"
-					   onclick="window.open('{% url 'task_stopwatch' task.pk %}','subwin','width=500,height=500');">
-						▶
-					</a>
-					<a href="{% url 'task_update' task.pk %}">
-						[{{task.group}}]{{task}}
-					</a>
-					<a href="{% url 'task_delete' task.pk %}">
-						[×]
-					</a>
-				</li>
-				{% empty %}
-				<li>タスクはありません</li>
-				{% endfor %}
-			</ul>
+		<div class="col-12">
+				<input type="hidden"
+				       id="finished_id"
+				       name="contain_fin"
+				       value={{ request.GET|contain_fin }}/>
+				<ul>
+					{% for task in object_list %}
+					<li>
+						<a href="javascript:void(0);"
+						   onclick="window.open('{% url 'task_stopwatch' task.pk %}','subwin','width=500,height=500');">
+							▶
+						</a>
+						{% if task.finished %}
+							[済]
+						{% else %}
+						<a href="{% url 'task_finish' task.pk %}">
+							[完了にする]
+						</a>
+						{% endif %}
+						<a href="{% url 'task_update' task.pk %}">
+							[{{task.group}}]{{task}}
+						</a>
+						<a href="{% url 'task_delete' task.pk %}">
+							[×]
+						</a>
+					</li>
+					{% empty %}
+					<li>タスクはありません</li>
+					{% endfor %}
+				</ul>
 		</div>
 	</div>
 </div>
+</form>
 {% endblock %}

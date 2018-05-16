@@ -25,11 +25,18 @@ class UserDeleteView(LoginRequiredMixin, DeleteView):
     success_url = reverse_lazy('login')
 
 # task一覧画面
+# TODO 完了済み表示と非表示を使い分けたい
 class TaskListView(LoginRequiredMixin, ListView):
     model = Task
 
     def get_queryset(self):
-        return Task.objects.filter(finished=False, user=self.request.user.id).order_by('group')
+        result = Task.objects.filter(user=self.request.user.id).order_by('finished', 'group',)
+
+        # 「完了含む」を押したとき以外
+        if self.request.GET.get('contain_fin') != "1/":
+            result = result.filter(finished = False)
+
+        return result
 
 # task登録画面
 class TaskCreateView(LoginRequiredMixin, CreateView):
@@ -69,6 +76,13 @@ class TaskUpdateView(LoginRequiredMixin, UpdateView):
 class TaskDeleteView(LoginRequiredMixin, DeleteView):
     model = Task
     success_url = reverse_lazy('task_list')
+
+# task完了
+def task_finish(request, pk):
+    task = get_object_or_404(Task, pk=pk)
+    task.finished = True
+    task.save()
+    return redirect('task_list')
 
 # popup group登録画面
 class PopupGroupCreateView(LoginRequiredMixin, CreateView):
