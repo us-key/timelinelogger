@@ -1,4 +1,7 @@
 from django import template
+from django.utils import timezone
+from django.utils import dateformat
+from datetime import datetime
 
 register = template.Library()
 
@@ -12,3 +15,11 @@ def contain_fin(querydict):
     else:
         contain_fin = "0"
     return contain_fin
+
+@register.filter
+def log_date(querydict):
+    # 日付ごとのログ抽出時の対象日付
+    log_date = querydict.get('log_date')
+    if log_date is None or log_date=="/":
+        log_date = dateformat.format(datetime.now(), 'Y-m-d')
+    return log_date

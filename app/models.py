@@ -45,6 +45,9 @@ class Log(models.Model):
     task = models.ForeignKey(
         'Task',
         on_delete=models.CASCADE,)
+    logdate = models.DateField(
+        default=timezone.now,
+        )
     started = models.DateTimeField(
         default=timezone.now,
         )

@@ -5,6 +5,7 @@ from django.views.generic.list import ListView
 from django.views.generic.edit import CreateView,UpdateView,DeleteView
 from django.contrib.auth.models import User
 from django.utils import timezone
+import datetime
 
 from .models import Task,Group,Log
 from .forms import UserForm,TaskForm,GroupForm
@@ -25,7 +26,6 @@ class UserDeleteView(LoginRequiredMixin, DeleteView):
     success_url = reverse_lazy('login')
 
 # task一覧画面
-# TODO 完了済み表示と非表示を使い分けたい
 class TaskListView(LoginRequiredMixin, ListView):
     model = Task
 
@@ -125,5 +125,12 @@ class LogListView(LoginRequiredMixin, ListView):
     model = Log
 
     def get_queryset(self):
-        return Log.objects.filter(task__user=self.request.user.id).order_by('-started')
+        # TODO 日付で絞る
+        d = timezone.now() # デフォルトは今日
+        log_date_str = self.request.GET.get('log_date')
+        if (log_date_str != None):
+            dt = datetime.datetime.strptime(log_date_str, '%Y-%m-%d')
+            d = datetime.date(dt.year, dt.month, dt.day)
+        log = Log.objects.filter(task__user=self.request.user.id, logdate=d, ended__isnull=False).order_by('task', '-started')
 
+        return log
