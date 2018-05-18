@@ -36,15 +36,15 @@
 				<ul>
 					{% for task in object_list %}
 					<li>
+						{% if task.finished %}
+							[済]
+						{% else %}
 						<a href="javascript:void(0);"
 						   onclick="window.open('{% url 'task_stopwatch' task.pk %}','subwin','width=500,height=500');">
 							▶
 						</a>
-						{% if task.finished %}
-							[済]
-						{% else %}
 						<a href="{% url 'task_finish' task.pk %}">
-							[完了にする]
+							[✔]
 						</a>
 						{% endif %}
 						<a href="{% url 'task_update' task.pk %}">
