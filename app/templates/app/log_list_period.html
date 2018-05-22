@@ -1,0 +1,60 @@
+{% extends "./_base.html" %}
+{% block content %}
+{% load custom_filters %}
+<div class="container">
+	<form method="get" action="" id="log_date_form">
+		<h2 class="text-center">
+			ログ一覧
+		</h2>
+		<a href="{% url 'log_list' %}">日付指定</a>
+		<div class="row">
+			<div class="col-6">
+				<div class="form-group" for="log_from_id">
+					<label for="">開始：</label>
+					<input class="form-control"
+						   id="log_from_id"
+						   name="log_from"
+						   type="date"
+						   value={{ request.GET|log_from }}
+						   required />
+				</div>
+			</div>
+			<div class="col-6">
+				<div class="form-group" for="log_to_id">
+					<label for="">終了：</label>
+					<input class="form-control"
+						   id="log_to_id"
+						   name="log_to"
+						   type="date"
+						   value={{ request.GET|log_to }}
+						   required />
+				</div>
+			</div>
+		</div>
+		<button class="btn">表示</button>
+	</form>
+	<div class="row">
+	{% for log in object_list %}
+		<div class="col-3">
+			<a href="{% url 'task_update' log.task.pk %}">
+				[{{ log.task.group }}]{{ log.task }}
+			</a>
+		</div>
+		<div class="col-4">
+			{{ log.started }}
+		</div>
+		<div class="col-1">
+			～
+		</div>
+		<div class="col-4">
+			{{ log.ended }}
+		</div>
+	{% empty %}
+		<div class="col-12">
+			ログがありません
+		</div>
+	{% endfor %}
+	</div>
+</div>
+
+{% endblock %}

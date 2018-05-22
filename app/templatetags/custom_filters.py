@@ -23,3 +23,19 @@ def log_date(querydict):
     if log_date is None or log_date=="/":
         log_date = dateformat.format(datetime.now(), 'Y-m-d')
     return log_date
+
+@register.filter
+def log_from(querydict):
+    # 日付ごとのログ抽出時の対象日付
+    log_from = querydict.get('log_from')
+    if log_from is None or log_from=="/":
+        log_from = dateformat.format(datetime.now(), 'Y-m-d')
+    return log_from
+
+@register.filter
+def log_to(querydict):
+    # 日付ごとのログ抽出時の対象日付
+    log_to = querydict.get('log_to')
+    if log_to is None or log_to=="/":
+        log_to = dateformat.format(datetime.now(), 'Y-m-d')
+    return log_to

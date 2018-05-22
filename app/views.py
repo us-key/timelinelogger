@@ -125,7 +125,7 @@ class LogListView(LoginRequiredMixin, ListView):
     model = Log
 
     def get_queryset(self):
-        # TODO 日付で絞る
+        # 日付で絞る
         d = timezone.now() # デフォルトは今日
         log_date_str = self.request.GET.get('log_date')
         if (log_date_str != None):
@@ -134,3 +134,26 @@ class LogListView(LoginRequiredMixin, ListView):
         log = Log.objects.filter(task__user=self.request.user.id, logdate=d, ended__isnull=False).order_by('task', '-started')
 
         return log
+
+# log一覧画面(期間指定)
+class LogListPeriodView(LoginRequiredMixin, ListView):
+    model = Log
+    template_name="app/log_list_period.html"
+
+    def get_queryset(self):
+        # 日付で絞る
+        # TODO 集計
+        df = timezone.now()
+        dt = timezone.now()
+        log_from_str = self.request.GET.get('log_from')
+        log_to_str = self.request.GET.get('log_to')
+        if (log_from_str != None):
+            dtf = datetime.datetime.strptime(log_from_str, '%Y-%m-%d')
+            df = datetime.date(dtf.year, dtf.month, dtf.day)
+        if (log_to_str != None):
+            dtt = datetime.datetime.strptime(log_to_str, '%Y-%m-%d')
+            dt = datetime.date(dtt.year, dtt.month, dtt.day)
+        log = Log.objects.filter(task__user=self.request.user.id, logdate__gte=df, logdate__lte=dt, ended__isnull=False).order_by('task', '-started')
+
+        return log
+
