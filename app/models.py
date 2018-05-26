@@ -55,7 +55,20 @@ class Log(models.Model):
         blank=True,
         null=True,
         )
+    # datetime.timedeltaをsumするのが困難なため、
+    # numberでDBに保持する
+    logdelta = models.IntegerField(
+        null=True,
+        )
 
     def __str__(self):
         return self.task.name + " " + str(self.started)
+
+    def logdelta_str(self):
+        sec = min = hour = 0
+        if self.logdelta is not None:
+            sec = self.logdelta % 3600
+            min = (self.logdelta // 60) % 60
+            hour = self.logdelta // 3600
+        return str(hour) + ":" + str(min) + ":" + str(sec)
 

@@ -5,6 +5,7 @@ from django.views.generic.list import ListView
 from django.views.generic.edit import CreateView,UpdateView,DeleteView
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.db import models
 import datetime
 
 from .models import Task,Group,Log
@@ -105,6 +106,8 @@ def task_stopwatch(request, pk):
     if request.method == "POST":
         log = Log.objects.filter(pk=request.POST['task_pk']).first()
         log.ended = timezone.now()
+        log.logdelta = (log.ended-log.started).seconds
+        print(log.logdelta)
         log.save()
         context = {
             'object_name': "",
@@ -131,29 +134,40 @@ class LogListView(LoginRequiredMixin, ListView):
         if (log_date_str != None):
             dt = datetime.datetime.strptime(log_date_str, '%Y-%m-%d')
             d = datetime.date(dt.year, dt.month, dt.day)
-        log = Log.objects.filter(task__user=self.request.user.id, logdate=d, ended__isnull=False).order_by('task', '-started')
 
+        log = Log.objects.filter(task__user=self.request.user.id, logdate=d, ended__isnull=False).order_by('task', '-started')
+        print(log)
+        for l in log:
+            print(l)
         return log
 
 # log一覧画面(期間指定)
-class LogListPeriodView(LoginRequiredMixin, ListView):
-    model = Log
-    template_name="app/log_list_period.html"
+def log_list_period(request):
 
-    def get_queryset(self):
-        # 日付で絞る
-        # TODO 集計
-        df = timezone.now()
-        dt = timezone.now()
-        log_from_str = self.request.GET.get('log_from')
-        log_to_str = self.request.GET.get('log_to')
-        if (log_from_str != None):
-            dtf = datetime.datetime.strptime(log_from_str, '%Y-%m-%d')
-            df = datetime.date(dtf.year, dtf.month, dtf.day)
-        if (log_to_str != None):
-            dtt = datetime.datetime.strptime(log_to_str, '%Y-%m-%d')
-            dt = datetime.date(dtt.year, dtt.month, dtt.day)
-        log = Log.objects.filter(task__user=self.request.user.id, logdate__gte=df, logdate__lte=dt, ended__isnull=False).order_by('task', '-started')
-
-        return log
+    # 日付で絞る
+    # TODO 集計
+    df = timezone.now()+datetime.timedelta(days=-6)
+    dt = timezone.now()
+    log_from_str = request.GET.get('log_from')
+    log_to_str = request.GET.get('log_to')
+    if (log_from_str != None):
+        dtf = datetime.datetime.strptime(log_from_str, '%Y-%m-%d')
+        df = datetime.date(dtf.year, dtf.month, dtf.day)
+    if (log_to_str != None):
+        dtt = datetime.datetime.strptime(log_to_str, '%Y-%m-%d')
+        dt = datetime.date(dtt.year, dtt.month, dtt.day)
+    # 日付でフィルタ
+    log = Log.objects.filter(task__user=request.user.id, logdate__gte=df, logdate__lte=dt, ended__isnull=False)
+    # 日付毎に集計
+    log = log.values('task','logdate').annotate(sum=models.Sum('logdelta'))
+    for l in log:
+        sec = l['sum'] % 3600
+        min = (l['sum'] // 60) % 60
+        hour = l['sum'] // 3600
+        l['sum_str'] = str(hour).zfill(2) + ":" + str(min).zfill(2) + ":" + str(sec).zfill(2)
+        task = Task.objects.get(pk=l['task'])
+        l['name'] = task
+        l['group'] = task.group
+    print(log)
+    return render(request, 'app/log_list_period.html', {'log': log})
 

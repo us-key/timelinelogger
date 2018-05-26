@@ -1,7 +1,7 @@
 from django import template
 from django.utils import timezone
 from django.utils import dateformat
-from datetime import datetime
+from datetime import datetime,timedelta
 
 register = template.Library()
 
@@ -29,7 +29,8 @@ def log_from(querydict):
     # 日付ごとのログ抽出時の対象日付
     log_from = querydict.get('log_from')
     if log_from is None or log_from=="/":
-        log_from = dateformat.format(datetime.now(), 'Y-m-d')
+        # 今日含め一週間分のログを取得
+        log_from = dateformat.format(datetime.now()+timedelta(days=-6), 'Y-m-d')
     return log_from
 
 @register.filter

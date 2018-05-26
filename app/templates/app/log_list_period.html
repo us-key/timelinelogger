@@ -34,20 +34,17 @@
 		<button class="btn">表示</button>
 	</form>
 	<div class="row">
-	{% for log in object_list %}
+	{% for l in log %}
 		<div class="col-3">
-			<a href="{% url 'task_update' log.task.pk %}">
-				[{{ log.task.group }}]{{ log.task }}
+			<a href="{% url 'task_update' l.task %}">
+				[{{ l.group }}]{{ l.name }}
 			</a>
 		</div>
 		<div class="col-4">
-			{{ log.started }}
-		</div>
-		<div class="col-1">
-			～
+			{{ l.logdate }}
 		</div>
 		<div class="col-4">
-			{{ log.ended }}
+			{{ l.sum_str }}
 		</div>
 	{% empty %}
 		<div class="col-12">

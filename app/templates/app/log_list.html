@@ -27,12 +27,14 @@
 					[{{ log.task.group }}]{{ log.task }}
 				</a>
 			</div>
-			<div class="col-4">
-				{{ log.started }}
-			</div>
+
 			<div class="col-1">
-				～
+				{{ log.logdelta_str }}
 			</div>
+			<div class="log-3">
+				{{ log.started }}～
+			</div>
+
 			<div class="col-4">
 				{{ log.ended }}
 			</div>
