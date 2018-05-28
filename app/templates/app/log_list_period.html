@@ -34,23 +34,35 @@
 		<button class="btn">表示</button>
 	</form>
 	<div class="row">
-	{% for l in log %}
-		<div class="col-3">
-			<a href="{% url 'task_update' l.task %}">
-				[{{ l.group }}]{{ l.name }}
-			</a>
-		</div>
-		<div class="col-4">
-			{{ l.logdate }}
-		</div>
-		<div class="col-4">
-			{{ l.sum_str }}
-		</div>
-	{% empty %}
-		<div class="col-12">
-			ログがありません
-		</div>
-	{% endfor %}
+	<!-- header -->
+
+	<!-- log -->
+	<table>
+		<th></th>
+		{% for head_d in date_arr %}
+		<th>{{ head_d }}</th>
+		{% endfor %}
+		{% for l in log %}
+			<tr>
+			<td>
+				<a href="{% url 'task_update' l.task %}">
+					[{{ l.group }}]{{ l.name }}
+				</a>
+			</td>
+			{% for row_d in date_arr %}
+				<td>
+				{% if row_d == l.logdate %}
+					{{ l.sum_str }}
+				{% endif %}
+				</td>
+			{% endfor %}
+			</tr>
+		{% empty %}
+			<div class="col-12">
+				ログがありません
+			</div>
+		{% endfor %}
+	</table>
 	</div>
 </div>
 

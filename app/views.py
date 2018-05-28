@@ -168,6 +168,18 @@ def log_list_period(request):
         task = Task.objects.get(pk=l['task'])
         l['name'] = task
         l['group'] = task.group
+        # logdateは文字列変換して渡す
+        l['logdate'] = l['logdate'].strftime('%Y/%m/%d')
     print(log)
-    return render(request, 'app/log_list_period.html', {'log': log})
+
+    # 日付表示対象の日付
+    log_date = df
+    date_arr = [log_date.strftime('%Y/%m/%d')]
+    while log_date != dt:
+        log_date = log_date + datetime.timedelta(days=1)
+        date_arr.append(log_date.strftime('%Y/%m/%d'))
+
+    print(date_arr)
+
+    return render(request, 'app/log_list_period.html', {'log': log, 'date_arr': date_arr})
 
