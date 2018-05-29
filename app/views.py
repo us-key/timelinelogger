@@ -160,17 +160,51 @@ def log_list_period(request):
     log = Log.objects.filter(task__user=request.user.id, logdate__gte=df, logdate__lte=dt, ended__isnull=False)
     # 日付毎に集計
     log = log.values('task','logdate').annotate(sum=models.Sum('logdelta'))
+    
+    task_arr = [] # ログ一覧に表示するタスクごとの配列を詰める箱
+    task_dic = {} # タスクごとの配列(日毎のログを詰める)
+    log_arr = [] # 日毎のログ
+    task_id = None
     for l in log:
         sec = l['sum'] % 3600
         min = (l['sum'] // 60) % 60
         hour = l['sum'] // 3600
         l['sum_str'] = str(hour).zfill(2) + ":" + str(min).zfill(2) + ":" + str(sec).zfill(2)
-        task = Task.objects.get(pk=l['task'])
-        l['name'] = task
-        l['group'] = task.group
         # logdateは文字列変換して渡す
         l['logdate'] = l['logdate'].strftime('%Y/%m/%d')
-    print(log)
+        task = Task.objects.get(pk=l['task'])
+        if task_id != l['task']:
+            task_id = l['task']
+            # idが前回と異なる場合、task_dicを新たに作る
+            task_dic = {}
+            task_dic['task'] = l['task']
+            task_dic['name'] = task
+            task_dic['group'] = task.group
+            # log_arrを新たに作る
+            log_arr = []
+            log_arr.append(l)
+            task_dic['log_arr'] = log_arr
+            # 作ったtask_dicを詰める
+            task_arr.append(task_dic)
+        else:
+            # idが前回と同じ場合、task_arrの最後の要素を取り出し、
+            # log_arrのappendのみ実施して詰めなおす
+            task_dic = task_arr[-1]
+            log_arr = task_dic['log_arr']
+            log_arr.append(l)
+            task_dic['log_arr'] = log_arr
+            task_arr[-1] = task_dic
+           
+    print(task_arr)
+
+    # 同じタスクのログはまとめる
+    # [{'task':22,
+    #  'name':'testtask',
+    #  'group:'testgroup',
+    #  'log_arr': [{'logdate':'2018/05/24', 'sum':'100', 'sum_str':'00:01:40'},
+    #          {'logdate':'2018/05/26', 'sum':'120', 'sum_str':'00:02:00'},
+    #         ]
+    # },{...}]
 
     # 日付表示対象の日付
     log_date = df
@@ -181,5 +215,5 @@ def log_list_period(request):
 
     print(date_arr)
 
-    return render(request, 'app/log_list_period.html', {'log': log, 'date_arr': date_arr})
+    return render(request, 'app/log_list_period.html', {'task_arr': task_arr, 'date_arr': date_arr})
 

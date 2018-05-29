@@ -42,18 +42,20 @@
 		{% for head_d in date_arr %}
 		<th>{{ head_d }}</th>
 		{% endfor %}
-		{% for l in log %}
+		{% for task_dic in task_arr %}
 			<tr>
 			<td>
-				<a href="{% url 'task_update' l.task %}">
-					[{{ l.group }}]{{ l.name }}
+				<a href="{% url 'task_update' task_dic.task %}">
+					[{{ task_dic.group }}]{{ task_dic.name }}
 				</a>
 			</td>
 			{% for row_d in date_arr %}
 				<td>
-				{% if row_d == l.logdate %}
-					{{ l.sum_str }}
-				{% endif %}
+				{% for l in task_dic.log_arr %}
+					{% if l.logdate == row_d %}
+						{{ l.sum_str }}
+					{% endif %}
+				{% endfor %}
 				</td>
 			{% endfor %}
 			</tr>
