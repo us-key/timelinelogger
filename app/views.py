@@ -146,8 +146,8 @@ def log_list_period(request):
 
     # 日付で絞る
     # TODO 集計
-    df = timezone.now()+datetime.timedelta(days=-6)
-    dt = timezone.now()
+    df = timezone.localdate(timezone.now())+datetime.timedelta(days=-6)
+    dt = timezone.localdate(timezone.now())
     log_from_str = request.GET.get('log_from')
     log_to_str = request.GET.get('log_to')
     if (log_from_str != None):
