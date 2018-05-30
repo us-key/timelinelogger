@@ -49,7 +49,11 @@ $(function() {
 	<table class="table table-striped table-sm-responsive">
 		<th></th>
 		{% for head_d in date_arr %}
-		<th class="text-center">{{ head_d }}</th>
+		<th class="text-center">
+			<a href="{% url 'log_list' %}?log_date={{ head_d|slash_to_dash }}">
+				{{ head_d }}
+			</a>
+		</th>
 		{% endfor %}
 		{% for task_dic in task_arr %}
 			<tr>

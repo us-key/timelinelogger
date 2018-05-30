@@ -40,3 +40,7 @@ def log_to(querydict):
     if log_to is None or log_to=="/":
         log_to = dateformat.format(datetime.now(), 'Y-m-d')
     return log_to
+
+@register.filter
+def slash_to_dash(str):
+    return str.replace('/', '-')
