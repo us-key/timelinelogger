@@ -67,8 +67,8 @@ class Log(models.Model):
     def logdelta_str(self):
         sec = min = hour = 0
         if self.logdelta is not None:
-            sec = self.logdelta % 3600
+            sec = self.logdelta % 60
             min = (self.logdelta // 60) % 60
             hour = self.logdelta // 3600
-        return str(hour) + ":" + str(min) + ":" + str(sec)
+        return str(hour).zfill(2) + ":" + str(min).zfill(2) + ":" + str(sec).zfill(2)
 
