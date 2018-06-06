@@ -124,28 +124,105 @@ def task_stopwatch(request, pk):
         return render(request, 'app/task_stopwatch.html', {'task': task, 'log': log})
 
 # log一覧画面
-class LogListView(LoginRequiredMixin, ListView):
-    model = Log
+#class LogListView(LoginRequiredMixin, ListView):
+    # model = Log
 
-    def get_queryset(self):
-        # 日付で絞る
-        d = timezone.now() # デフォルトは今日
-        log_date_str = self.request.GET.get('log_date')
-        if (log_date_str != None):
-            dt = datetime.datetime.strptime(log_date_str, '%Y-%m-%d')
-            d = datetime.date(dt.year, dt.month, dt.day)
+    # def get_queryset(self):
+def log_list(request):
+    # 日付で絞る
+    d = timezone.now() # デフォルトは今日
+    log_date_str = request.GET.get('log_date')
+    if (log_date_str != None):
+        dt = datetime.datetime.strptime(log_date_str, '%Y-%m-%d')
+        d = datetime.date(dt.year, dt.month, dt.day)
 
-        log = Log.objects.filter(task__user=self.request.user.id, logdate=d, ended__isnull=False).order_by('task', '-started')
-        print(log)
-        for l in log:
-            print(l)
-        return log
+    log = Log.objects.filter(task__user=request.user.id, logdate=d, ended__isnull=False).order_by('task', '-started')
+    print(log)
+    
+    # TODO 時間軸で表示するため、時間軸全体に対するパーセンテージを取得
+    # ログ毎に取る値：開始時間、終了時間、開始時間の%、時間幅の%
+    # 同じタスクのログはまとめる
+    # ブラウザ問わずCSSは小数点2桁まで認識するようなので、3桁目で四捨五入する
+    # 8秒以下のログは0.01%以下のため表示されない
+    # [{'task':22,
+    #  'name':'testtask',
+    #  'group:'testgroup',
+    #  'log_arr': [{'started_str':'09:01:15', 'ended_str':'09:31:15', 'started_percent': '37.59', 'delta_percent': '2.08'},
+    #              {...}
+    #        ]
+    # },{...}]
+    task_arr = [] # タスクごとの配列を詰める
+    task_dic = {} # タスクごとの配列(その日のログを詰める)
+    log_arr = [] # その日のタスクのログ
+    task_id = None
+    sec_24h = 24*60*60 # 24hの秒数
+    for l in log:
+        if task_id != l.task:
+            task_id = l.task
+            task = Task.objects.get(pk=l.task.id)
+            # idが前回と異なる場合task_dicを新たに作る
+            task_dic = {}
+            task_dic['task'] = l.task.id
+            task_dic['name'] = task
+            task_dic['group'] = task.group
+            # log_arrを新たに作る
+            log_arr = []
+            log_dic = {}
+            log_dic['started_str'] = l.started.strftime('%H:%M:%S')
+            log_dic['ended_str'] = l.ended.strftime('%H:%M:%S')
+            # 開始時刻の24hに対するパーセンテージを取得
+            st_sec = (l.started.hour*60+l.started.minute)*60+l.started.second
+            log_dic['started_percent'] = round(float(st_sec)/sec_24h,4)*100
+            print(log_dic['started_percent'])
+            
+            log_dic['delta_percent'] = round(float(l.logdelta)/sec_24h,4)*100
+            print(log_dic['delta_percent'])
+            log_arr.append(log_dic)
+            task_dic['log_arr'] = log_arr
+            # 作ったtask_dicを詰める
+            task_arr.append(task_dic)
+        else:
+            # idが前回と同じ場合、task_arrの最後の要素を取り出し、
+            # log_arrのappendのみ実施して詰めなおす
+            task_dic = task_arr[-1]
+            log_arr = task_dic['log_arr']
+            log_dic = {}
+            # TODO log_dicを作る部分が同じなので共通化する
+            log_dic['started_str'] = l.started.strftime('%H:%M:%S')
+            log_dic['ended_str'] = l.ended.strftime('%H:%M:%S')
+            # 開始時刻の24hに対するパーセンテージを取得
+            st_sec = (l.started.hour*60+l.started.minute)*60+l.started.second
+            log_dic['started_percent'] = round(float(st_sec)/sec_24h,4)*100
+            print(log_dic['started_percent'])
+            
+            log_dic['delta_percent'] = round(float(l.logdelta)/sec_24h,4)*100
+            print(log_dic['delta_percent'])
+            log_arr.append(log_dic)
+            task_dic['log_arr'] = log_arr
+
+            task_arr[-1] = task_dic
+
+    # TODO test
+    # task_dic['task'] = 22
+    # task_dic['name'] = 'testtask'
+    # task_dic['group'] = 'testgroup'
+    # log_dic = {}
+    # log_dic['started_str'] = '09:01:15'
+    # log_dic['ended_str'] = '09:31:15'
+    # log_dic['started_percent'] = '37.59'
+    # log_dic['delta_percent'] = '2.08'
+
+    # log_arr.append(log_dic)
+    # task_dic['log_arr'] = log_arr
+
+    # task_arr.append(task_dic)
+
+    return render(request, 'app/log_list.html', {'task_arr': task_arr})
 
 # log一覧画面(期間指定)
 def log_list_period(request):
 
     # 日付で絞る
-    # TODO 集計
     df = timezone.localdate(timezone.now())+datetime.timedelta(days=-6)
     dt = timezone.localdate(timezone.now())
     log_from_str = request.GET.get('log_from')
@@ -166,15 +243,15 @@ def log_list_period(request):
     log_arr = [] # 日毎のログ
     task_id = None
     for l in log:
-        sec = l['sum'] % 3600
+        sec = l['sum'] % 60
         min = (l['sum'] // 60) % 60
         hour = l['sum'] // 3600
         l['sum_str'] = str(hour).zfill(2) + ":" + str(min).zfill(2) + ":" + str(sec).zfill(2)
         # logdateは文字列変換して渡す
         l['logdate'] = l['logdate'].strftime('%Y/%m/%d')
-        task = Task.objects.get(pk=l['task'])
         if task_id != l['task']:
             task_id = l['task']
+            task = Task.objects.get(pk=l['task'])
             # idが前回と異なる場合、task_dicを新たに作る
             task_dic = {}
             task_dic['task'] = l['task']

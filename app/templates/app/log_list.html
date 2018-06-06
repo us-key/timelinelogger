@@ -4,61 +4,53 @@
 <div class="container">
 	<div class="row">
 		<div class="col-12">
-		<form method="get" action="" id="log_date_form">
-			<h2 class="text-center">
-				ログ一覧
-			</h2>
-			<a href="{% url 'log_list_period' %}">期間指定</a>
-			<div class="form-group" for="log_date_id">
-				<label for="">日付：</label>
-				<input class="form-control"
-					   id="log_date_id"
-					   name="log_date"
-					   type="date"
-					   value={{ request.GET|log_date }}
-					   required />
-			</div>
-			<button class="btn">表示</button>
-		</form>
-		</div>
-		<div class="col-12">
-			<table class="table table-striped table-sm-responsive">
-				<!-- header -->
-				<tr>
-					<th class="text-center">[group]taskname</th>
-					<th class="text-center">time</th>
-					<th class="text-center" colspan="3">start-end</th>
-				</tr>
-				<!-- log -->
-				{% for log in object_list %}
-				<tr>
-					<td>
-						<a href="{% url 'task_update' log.task.pk %}">
-							[{{ log.task.group }}]{{ log.task }}
-						</a>
-					</td>
-		
-					<td class="text-center">
-						{{ log.logdelta_str }}
-					</td>
-					<td class="text-center">
-						{{ log.started }}
-					</td>
-					<td class="text-center">
-						~
-					</td>
-					<td class="text-center">
-						{{ log.ended }}
-					</td>
-				</tr>
-				{% empty %}
-				<div class="col-12">
-					ログがありません
+			<form method="get" action="" id="log_date_form">
+				<h2 class="text-center">
+					ログ一覧
+				</h2>
+				<a href="{% url 'log_list_period' %}">期間指定</a>
+				<div class="form-group" for="log_date_id">
+					<label for="">日付：</label>
+					<input class="form-control"
+						id="log_date_id"
+						name="log_date"
+						type="date"
+						value={{ request.GET|log_date }}
+						required />
 				</div>
-				{% endfor %}
-	
-			</table>
+				<button class="btn">表示</button>
+			</form>
 		</div>
+	</div>
+	<div class="row">
+		{% for task_dic in task_arr %}
+		<div class="col-12" style="height: 30px; position: relative;">
+			<div style="height: 100%; width: 10%; position: absolute;">
+				<a href="{% url 'task_update' task_dic.task %}">
+					[{{ task_dic.group }}]{{ task_dic.name }}
+				</a>
+			</div>
+			<div style="height: 100%; width: 90%; position: absolute;">
+			{% for log_dic in task_dic.log_arr %}
+				<div style="
+					position: absolute;
+					background-color: #000000;
+					height: 100%; 
+					left: {{ log_dic.started_percent }}%;
+					width: {{ log_dic.delta_percent }}%;
+					"
+					data-toggle="tooltip"
+					data-placement="top"
+					title="{{ log_dic.started_str }}~{{ log_dic.ended_str }}">
+				</div>
+			{% endfor %}	
+			</div>
+		</div>
+		{% empty %}
+		<div class="col-12">
+			ログがありません
+		</div>
+		{% endfor %}
 	</div>
 </div>
 

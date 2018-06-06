@@ -1,6 +1,6 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
-from .views import UserCreateView,UserDeleteView,TaskListView,TaskCreateView,TaskUpdateView,TaskDeleteView,PopupGroupCreateView,LogListView
+from .views import UserCreateView,UserDeleteView,TaskListView,TaskCreateView,TaskUpdateView,TaskDeleteView,PopupGroupCreateView
 from . import views
 
 urlpatterns = [
@@ -32,7 +32,7 @@ urlpatterns = [
     # log作成(stopwatch)
     path('task_stopwatch/<int:pk>/', views.task_stopwatch, name='task_stopwatch'),
     # log一覧画面(日付指定)
-    path('log/', LogListView.as_view(), name='log_list'),
+    path('log/', views.log_list, name='log_list'),
     # log一覧表示(期間指定)
     path('log/period/', views.log_list_period, name='log_list_period'),
 
