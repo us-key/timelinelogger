@@ -25,12 +25,12 @@
 	<div class="row">
 		{% for task_dic in task_arr %}
 		<div class="col-12" style="height: 30px; position: relative;">
-			<div style="height: 100%; width: 10%; position: absolute;">
+			<div style="height: 100%; width: 10%; left: 0%; margin: 10px; position: absolute;">
 				<a href="{% url 'task_update' task_dic.task %}">
 					[{{ task_dic.group }}]{{ task_dic.name }}
 				</a>
 			</div>
-			<div style="height: 100%; width: 90%; position: absolute;">
+			<div style="height: 100%; width: 90%; left: 10%; margin: 10px; position: absolute;">
 			{% for log_dic in task_dic.log_arr %}
 				<div style="
 					position: absolute;

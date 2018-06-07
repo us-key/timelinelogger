@@ -139,7 +139,7 @@ def log_list(request):
     log = Log.objects.filter(task__user=request.user.id, logdate=d, ended__isnull=False).order_by('task', '-started')
     print(log)
     
-    # TODO 時間軸で表示するため、時間軸全体に対するパーセンテージを取得
+    # 時間軸で表示するため、時間軸全体に対するパーセンテージを取得
     # ログ毎に取る値：開始時間、終了時間、開始時間の%、時間幅の%
     # 同じタスクのログはまとめる
     # ブラウザ問わずCSSは小数点2桁まで認識するようなので、3桁目で四捨五入する
@@ -151,6 +151,22 @@ def log_list(request):
     #              {...}
     #        ]
     # },{...}]
+
+    # 時間軸の幅は最初の開始時刻～最後の終了時刻までにする
+    fi_started = 24*60*60-1 # 最初の開始時刻(秒) 初期値は23時59分59秒
+    la_ended = 0 # 最後の終了時刻(秒)
+
+    for l in log:
+        st_sec = (l.started.hour*60+l.started.minute)*60+l.started.second
+        ed_sec = (l.ended.hour*60+l.ended.minute)*60+l.ended.second
+        if fi_started > st_sec:
+            fi_started = st_sec
+        if la_ended < ed_sec:
+            la_ended = ed_sec
+    
+    sec_delta = la_ended - fi_started # 時間軸の幅の基準になる秒数
+    print("fi_started:" + str(fi_started) + " la_ended:" + str(la_ended) + " sec_delta:" + str(sec_delta))
+    
     task_arr = [] # タスクごとの配列を詰める
     task_dic = {} # タスクごとの配列(その日のログを詰める)
     log_arr = [] # その日のタスクのログ
@@ -167,7 +183,7 @@ def log_list(request):
             # log_arrを新たに作る
             log_arr = []
             log_dic = {}
-            log_arr.append(__create_log_dic(log_dic, l))
+            log_arr.append(__create_log_dic(log_dic, l, fi_started, la_ended, sec_delta))
             task_dic['log_arr'] = log_arr
             # 作ったtask_dicを詰める
             task_arr.append(task_dic)
@@ -177,7 +193,7 @@ def log_list(request):
             task_dic = task_arr[-1]
             log_arr = task_dic['log_arr']
             log_dic = {}
-            log_arr.append(__create_log_dic(log_dic, l))
+            log_arr.append(__create_log_dic(log_dic, l, fi_started, la_ended, sec_delta))
             task_dic['log_arr'] = log_arr
 
             task_arr[-1] = task_dic
@@ -274,17 +290,15 @@ def log_list_period(request):
 
     return render(request, 'app/log_list_period.html', {'task_arr': task_arr, 'date_arr': date_arr})
 
-def __create_log_dic(log_dic, l):
-    sec_24h = 24*60*60 # 24hの秒数
-
+def __create_log_dic(log_dic, l, fi_started, la_ended, sec_delta):
     log_dic['started_str'] = l.started.strftime('%H:%M:%S')
     log_dic['ended_str'] = l.ended.strftime('%H:%M:%S')
-    # 開始時刻の24hに対するパーセンテージを取得
-    st_sec = (l.started.hour*60+l.started.minute)*60+l.started.second
-    log_dic['started_percent'] = round(float(st_sec)/sec_24h,4)*100
+    # 開始時刻の全体に対するパーセンテージを取得
+    st_sec = (l.started.hour*60+l.started.minute)*60+l.started.second - fi_started
+    log_dic['started_percent'] = round(float(st_sec)/sec_delta,4)*100
     print(log_dic['started_percent'])
     
-    log_dic['delta_percent'] = round(float(l.logdelta)/sec_24h,4)*100
+    log_dic['delta_percent'] = round(float(l.logdelta)/sec_delta,4)*100
     print(log_dic['delta_percent'])
 
     return log_dic
