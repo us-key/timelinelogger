@@ -4,7 +4,7 @@ $('.save').on('click', function(e){
 	$('#obj_form').submit();
 });
 
-$(function() {
+$(document).ready(function() {
     $('[data-toggle="tooltip"]').tooltip();
 });
 

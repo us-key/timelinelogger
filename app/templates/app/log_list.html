@@ -23,28 +23,47 @@
 		</div>
 	</div>
 	<div class="row">
+		<div class="col-3" style="height:25px; background-color: rgba(0,0,0,.05)"></div>
+		<div class="col-9" style="background-color: rgba(0,0,0,.05)">
+			{% for key, val in hour_dic.items %}
+			<div class="hour_header" 
+				style="
+				position: absolute;
+				left: {{val}}%;
+				margin-left: 
+				">
+			{{ key }}
+			</div>
+			{% endfor %}
+		</div>
 		{% for task_dic in task_arr %}
-		<div class="col-12" style="height: 30px; position: relative;">
-			<div style="height: 100%; width: 10%; left: 0%; margin: 10px; position: absolute;">
-				<a href="{% url 'task_update' task_dic.task %}">
-					[{{ task_dic.group }}]{{ task_dic.name }}
-				</a>
-			</div>
-			<div style="height: 100%; width: 90%; left: 10%; margin: 10px; position: absolute;">
+		{% if forloop.counter0|divisibleby:"2" %}
+		<div class="col-3">
+		{% else %}
+		<div class="col-3" style="background-color: rgba(0,0,0,.05)">
+		{% endif %}
+			<a href="{% url 'task_update' task_dic.task %}">
+				[{{ task_dic.group }}]{{ task_dic.name }}
+			</a>
+		</div>
+		{% if forloop.counter0|divisibleby:"2" %}
+		<div class="col-9">
+		{% else %}
+		<div class="col-9" style="background-color: rgba(0,0,0,.05)">
+		{% endif %}
 			{% for log_dic in task_dic.log_arr %}
-				<div style="
-					position: absolute;
-					background-color: #000000;
-					height: 100%; 
-					left: {{ log_dic.started_percent }}%;
-					width: {{ log_dic.delta_percent }}%;
-					"
-					data-toggle="tooltip"
-					data-placement="top"
-					title="{{ log_dic.started_str }}~{{ log_dic.ended_str }}">
-				</div>
-			{% endfor %}	
+			<div class="table-success"
+				 style="
+				position: absolute;
+				height: 100%; 
+				left: {{ log_dic.started_percent }}%;
+				width: {{ log_dic.delta_percent }}%;
+				"
+				data-toggle="tooltip"
+				data-placement="top"
+				title="{{ log_dic.started_str }}~{{ log_dic.ended_str }}">
 			</div>
+			{% endfor %}	
 		</div>
 		{% empty %}
 		<div class="col-12">
@@ -53,5 +72,4 @@
 		{% endfor %}
 	</div>
 </div>
-
 {% endblock %}

@@ -7,6 +7,8 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 from django.db import models
 import datetime
+import pytz
+import time
 
 from .models import Task,Group,Log
 from .forms import UserForm,TaskForm,GroupForm
@@ -157,13 +159,20 @@ def log_list(request):
     la_ended = 0 # 最後の終了時刻(秒)
 
     for l in log:
+        # TODO 設定ファイルからタイムゾーンを取る。一旦固定値。
+        default_timezone = pytz.timezone('Asia/Tokyo')
+        l.started = default_timezone.normalize(l.started.astimezone(default_timezone))
+        print(l.started)
+        l.ended = default_timezone.normalize(l.ended.astimezone(default_timezone))
+        print(l.ended)
+
         st_sec = (l.started.hour*60+l.started.minute)*60+l.started.second
         ed_sec = (l.ended.hour*60+l.ended.minute)*60+l.ended.second
         if fi_started > st_sec:
             fi_started = st_sec
         if la_ended < ed_sec:
             la_ended = ed_sec
-    
+
     sec_delta = la_ended - fi_started # 時間軸の幅の基準になる秒数
     print("fi_started:" + str(fi_started) + " la_ended:" + str(la_ended) + " sec_delta:" + str(sec_delta))
     
@@ -177,6 +186,7 @@ def log_list(request):
             task = Task.objects.get(pk=l.task.id)
             # idが前回と異なる場合task_dicを新たに作る
             task_dic = {}
+            task_dic['no'] = len(task_arr)
             task_dic['task'] = l.task.id
             task_dic['name'] = task
             task_dic['group'] = task.group
@@ -198,22 +208,20 @@ def log_list(request):
 
             task_arr[-1] = task_dic
 
-    # TODO test
-    # task_dic['task'] = 22
-    # task_dic['name'] = 'testtask'
-    # task_dic['group'] = 'testgroup'
-    # log_dic = {}
-    # log_dic['started_str'] = '09:01:15'
-    # log_dic['ended_str'] = '09:31:15'
-    # log_dic['started_percent'] = '37.59'
-    # log_dic['delta_percent'] = '2.08'
+    # ヘッダに表示する時間軸。時と時間軸中のパーセンテージ
+    # 例: {'10': '1.25', '11': '55.25'}
+    # 時間軸が6時間未満 ：1時間刻み
+    #        12時間未満：2時間刻み
+    #        18時間未満：3時間刻み
+    #        それ以上：4時間刻み
+    hour_dic = {}
+    hour_span = (sec_delta // (6*60*60)) + 1
 
-    # log_arr.append(log_dic)
-    # task_dic['log_arr'] = log_arr
+    for x in range(0,24,hour_span):
+        if fi_started <= x*3600 & x*3600 <= la_ended:
+            hour_dic[x] = round(float(x*3600-fi_started)/sec_delta, 4)*100
 
-    # task_arr.append(task_dic)
-
-    return render(request, 'app/log_list.html', {'task_arr': task_arr})
+    return render(request, 'app/log_list.html', {'task_arr': task_arr, 'hour_dic': hour_dic})
 
 # log一覧画面(期間指定)
 def log_list_period(request):
@@ -291,8 +299,11 @@ def log_list_period(request):
     return render(request, 'app/log_list_period.html', {'task_arr': task_arr, 'date_arr': date_arr})
 
 def __create_log_dic(log_dic, l, fi_started, la_ended, sec_delta):
+
     log_dic['started_str'] = l.started.strftime('%H:%M:%S')
     log_dic['ended_str'] = l.ended.strftime('%H:%M:%S')
+    print(log_dic['started_str'])
+    print(log_dic['ended_str'])
     # 開始時刻の全体に対するパーセンテージを取得
     st_sec = (l.started.hour*60+l.started.minute)*60+l.started.second - fi_started
     log_dic['started_percent'] = round(float(st_sec)/sec_delta,4)*100
