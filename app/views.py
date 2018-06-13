@@ -6,6 +6,7 @@ from django.views.generic.edit import CreateView,UpdateView,DeleteView
 from django.contrib.auth.models import User
 from django.utils import timezone
 from django.db import models
+from django.conf import settings
 import datetime
 import pytz
 import time
@@ -158,9 +159,11 @@ def log_list(request):
     fi_started = 24*60*60-1 # 最初の開始時刻(秒) 初期値は23時59分59秒
     la_ended = 0 # 最後の終了時刻(秒)
 
+    # 設定ファイルからタイムゾーンを取る
+    settings_tz = settings.TIME_ZONE
+
     for l in log:
-        # TODO 設定ファイルからタイムゾーンを取る。一旦固定値。
-        default_timezone = pytz.timezone('Asia/Tokyo')
+        default_timezone = pytz.timezone(settings_tz)
         l.started = default_timezone.normalize(l.started.astimezone(default_timezone))
         print(l.started)
         l.ended = default_timezone.normalize(l.ended.astimezone(default_timezone))
