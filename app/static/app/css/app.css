@@ -1,8 +1,11 @@
+.err_msg {
+    color: red;
+}
+
 # Responsive and Mobile-Friendly Tooltip
 # https://osvaldas.info/elegant-css-and-jquery-tooltip-responsive-mobile-friendly
 
-#tooltip
-{
+#tooltip {
     text-align: center;
     color: #fff;
     background: #111;
@@ -11,8 +14,7 @@
     padding: 15px;
 }
  
-    #tooltip:after /* triangle decoration */
-    {
+    #tooltip:after /* triangle decoration */ {
         width: 0;
         height: 0;
         border-left: 10px solid transparent;
@@ -25,22 +27,19 @@
         margin-left: -10px;
     }
  
-        #tooltip.top:after
-        {
+        #tooltip.top:after {
             border-top-color: transparent;
             border-bottom: 10px solid #111;
             top: -20px;
             bottom: auto;
         }
  
-        #tooltip.left:after
-        {
+        #tooltip.left:after {
             left: 10px;
             margin: 0;
         }
  
-        #tooltip.right:after
-        {
+        #tooltip.right:after {
             right: 10px;
             left: auto;
             margin: 0;

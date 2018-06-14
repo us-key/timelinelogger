@@ -8,6 +8,33 @@ $(function() {
 			$(this).addClass("table-success");
 		}
 	});
+	$('#log_date_form').on('submit', function(){
+		// 入力チェック
+		log_from = $('#log_from_id').val();
+		log_to = $('#log_to_id').val();
+		required_err_flg = false;
+
+		// 1.必須チェック
+		if (log_from == "") {
+			$('#from_err_msg').html("入力してください。");
+			required_err_flg = true;
+		}
+		if (log_to == "") {
+			$('#to_err_msg').html("入力してください");
+			required_err_flg = true;
+		}
+		if (required_err_flg) {
+			return false;
+		}
+		// 2.日付前後チェック
+		if (log_from > log_to) {
+			$('#from_err_msg').html("開始は終了より前の日付を入力してください。");
+			return false;	
+		}
+		// エラーなし:エラーメッセージクリア
+		$('#from_err_msg').html("");
+		$('#to_err_msg').html("");
+	});
 });
 </script>
 <div class="container">
@@ -25,7 +52,8 @@ $(function() {
 						   name="log_from"
 						   type="date"
 						   value={{ request.GET|log_from }}
-						   required />
+						   />
+					<p id="from_err_msg" class="err_msg"></p>
 				</div>
 			</div>
 			<div class="col-6">
@@ -36,7 +64,8 @@ $(function() {
 						   name="log_to"
 						   type="date"
 						   value={{ request.GET|log_to }}
-						   required />
+						   />
+				    <p id="to_err_msg" class="err_msg"></p>
 				</div>
 			</div>
 		</div>
