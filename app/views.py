@@ -1,5 +1,6 @@
 from django.shortcuts import render,redirect,get_object_or_404
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
 from django.urls import reverse_lazy
 from django.views.generic.list import ListView
 from django.views.generic.edit import CreateView,UpdateView,DeleteView
@@ -46,7 +47,6 @@ class TaskListView(LoginRequiredMixin, ListView):
 class TaskCreateView(LoginRequiredMixin, CreateView):
     model = Task
     form_class = TaskForm
-#     success_url = reverse_lazy('index')
 
     def get_form_kwargs(self):
         kwargs = super(TaskCreateView, self).get_form_kwargs()
@@ -82,6 +82,7 @@ class TaskDeleteView(LoginRequiredMixin, DeleteView):
     success_url = reverse_lazy('task_list')
 
 # task完了
+@login_required
 def task_finish(request, pk):
     task = get_object_or_404(Task, pk=pk)
     task.finished = True
@@ -105,6 +106,7 @@ class PopupGroupCreateView(LoginRequiredMixin, CreateView):
         return render(self.request, 'app/close.html', context)
 
 # popup stopwatch画面
+@login_required
 def task_stopwatch(request, pk):
     if request.method == "POST":
         log = Log.objects.filter(pk=request.POST['task_pk']).first()
@@ -127,10 +129,7 @@ def task_stopwatch(request, pk):
         return render(request, 'app/task_stopwatch.html', {'task': task, 'log': log})
 
 # log一覧画面
-#class LogListView(LoginRequiredMixin, ListView):
-    # model = Log
-
-    # def get_queryset(self):
+@login_required
 def log_list(request):
     # 日付で絞る
     d = timezone.now() # デフォルトは今日
@@ -227,6 +226,7 @@ def log_list(request):
     return render(request, 'app/log_list.html', {'task_arr': task_arr, 'hour_dic': hour_dic})
 
 # log一覧画面(期間指定)
+@login_required
 def log_list_period(request):
 
     # 日付で絞る
