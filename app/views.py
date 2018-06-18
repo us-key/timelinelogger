@@ -149,7 +149,8 @@ def log_list(request):
     # [{'task':22,
     #  'name':'testtask',
     #  'group:'testgroup',
-    #  'log_arr': [{'started_str':'09:01:15', 'ended_str':'09:31:15', 'started_percent': '37.59', 'delta_percent': '2.08'},
+    #  'sum': '01:01:01'
+    #  'log_arr': [{'started_str':'09:01:15', 'ended_str':'09:31:15', 'delta_str':'00:30:00', 'started_percent': '37.59', 'delta_percent': '2.08'},
     #              {...}
     #        ]
     # },{...}]
@@ -180,13 +181,22 @@ def log_list(request):
     
     task_arr = [] # タスクごとの配列を詰める
     task_dic = {} # タスクごとの配列(その日のログを詰める)
+    task_sum = 0 # タスクごとの秒数の合計(文字列ではなく秒数。dicに詰める際に文字列変換)
     log_arr = [] # その日のタスクのログ
     task_id = None
     for l in log:
         if task_id != l.task:
+            # 前のタスク分のサマリを文字列に変換して詰める
+            if len(task_arr) > 0:
+                prev_task_dic = task_arr[-1]
+                prev_task_dic['sum'] = __sec_to_hhmmss_str(task_sum)
+                print(prev_task_dic['sum'])
+                # TODO この詰めなおしが必要かどうか要確認
+                #task_arr[-1] = prev_task_dic
             task_id = l.task
             task = Task.objects.get(pk=l.task.id)
             # idが前回と異なる場合task_dicを新たに作る
+            task_sum = l.logdelta # logdeltaも計算しなおし
             task_dic = {}
             task_dic['no'] = len(task_arr)
             task_dic['task'] = l.task.id
@@ -202,6 +212,7 @@ def log_list(request):
         else:
             # idが前回と同じ場合、task_arrの最後の要素を取り出し、
             # log_arrのappendのみ実施して詰めなおす
+            task_sum += l.logdelta
             task_dic = task_arr[-1]
             log_arr = task_dic['log_arr']
             log_dic = {}
@@ -209,6 +220,12 @@ def log_list(request):
             task_dic['log_arr'] = log_arr
 
             task_arr[-1] = task_dic
+    # 最後のタスクの合計がセットされない
+    if len(task_arr) > 0:
+        prev_task_dic = task_arr[-1]
+        prev_task_dic['sum'] = __sec_to_hhmmss_str(task_sum)
+        # TODO この詰めなおしが必要かどうか要確認
+        #task_arr[-1] = prev_task_dic
 
     # ヘッダに表示する時間軸。時と時間軸中のパーセンテージ
     # 例: {'10': '1.25', '11': '55.25'}
@@ -250,10 +267,8 @@ def log_list_period(request):
     log_arr = [] # 日毎のログ
     task_id = None
     for l in log:
-        sec = l['sum'] % 60
-        min = (l['sum'] // 60) % 60
-        hour = l['sum'] // 3600
-        l['sum_str'] = str(hour).zfill(2) + ":" + str(min).zfill(2) + ":" + str(sec).zfill(2)
+        # 合計時間のhh:mm:ss表示
+        l['sum_str'] = __sec_to_hhmmss_str(l['sum'])
         # logdateは文字列変換して渡す
         l['logdate'] = l['logdate'].strftime('%Y/%m/%d')
         if task_id != l['task']:
@@ -301,12 +316,15 @@ def log_list_period(request):
 
     return render(request, 'app/log_list_period.html', {'task_arr': task_arr, 'date_arr': date_arr})
 
+# ログ1件分の情報を作成する
 def __create_log_dic(log_dic, l, fi_started, la_ended, sec_delta):
 
     log_dic['started_str'] = l.started.strftime('%H:%M:%S')
     log_dic['ended_str'] = l.ended.strftime('%H:%M:%S')
+    log_dic['delta_str'] = __sec_to_hhmmss_str(l.logdelta)
     print(log_dic['started_str'])
     print(log_dic['ended_str'])
+    print(log_dic['delta_str'])
     # 開始時刻の全体に対するパーセンテージを取得
     st_sec = (l.started.hour*60+l.started.minute)*60+l.started.second - fi_started
     log_dic['started_percent'] = round(float(st_sec)/sec_delta,4)*100
@@ -316,3 +334,13 @@ def __create_log_dic(log_dic, l, fi_started, la_ended, sec_delta):
     print(log_dic['delta_percent'])
 
     return log_dic
+
+# 秒数から時分秒の文字列を作成する
+def __sec_to_hhmmss_str(total_sec):
+    print(str(total_sec))
+    sec = total_sec % 60
+    min = (total_sec // 60) % 60
+    hour = total_sec // 3600
+    ret_str = str(hour).zfill(2) + ":" + str(min).zfill(2) + ":" + str(sec).zfill(2)
+    print(ret_str)
+    return ret_str
