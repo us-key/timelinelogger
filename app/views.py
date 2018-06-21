@@ -13,7 +13,7 @@ import pytz
 import time
 
 from .models import Task,Group,Log
-from .forms import UserForm,TaskForm,GroupForm
+from .forms import UserForm,TaskForm,GroupForm,LogForm
 
 # Create your views here.
 
@@ -105,6 +105,28 @@ class PopupGroupCreateView(LoginRequiredMixin, CreateView):
             }
         return render(self.request, 'app/close.html', context)
 
+# ログ編集画面
+def log_update(request, pk):
+    # submit時
+    if request.method == 'POST':
+        log = Log.objects.filter(pk=request.POST['id']).first()
+        log.started = request.POST['started']
+        log.ended = request.POST['ended']
+        log.logdelta = (log.ended-log.started).seconds
+        log.save()
+        return redirect('log_list')
+    # 画面表示時
+    else:
+        log = get_object_or_404(Log, pk=pk)
+        print(log)
+        form =LogForm()
+        form.id = log.id
+        form.task = log.task.name
+        form.started = log.started
+        form.ended = log.ended
+        print(form)
+        return render(request, 'app/log_form.html', {'form': form})
+
 # popup stopwatch画面
 @login_required
 def task_stopwatch(request, pk):
@@ -112,7 +134,6 @@ def task_stopwatch(request, pk):
         log = Log.objects.filter(pk=request.POST['task_pk']).first()
         log.ended = timezone.now()
         log.logdelta = (log.ended-log.started).seconds
-        print(log.logdelta)
         log.save()
         context = {
             'object_name': "",
@@ -150,7 +171,7 @@ def log_list(request):
     #  'name':'testtask',
     #  'group:'testgroup',
     #  'sum': '01:01:01'
-    #  'log_arr': [{'started_str':'09:01:15', 'ended_str':'09:31:15', 'delta_str':'00:30:00', 'started_percent': '37.59', 'delta_percent': '2.08'},
+    #  'log_arr': [{'log':33, started_str':'09:01:15', 'ended_str':'09:31:15', 'delta_str':'00:30:00', 'started_percent': '37.59', 'delta_percent': '2.08'},
     #              {...}
     #        ]
     # },{...}]
@@ -318,7 +339,7 @@ def log_list_period(request):
 
 # ログ1件分の情報を作成する
 def __create_log_dic(log_dic, l, fi_started, la_ended, sec_delta):
-
+    log_dic['log'] = l.id
     log_dic['started_str'] = l.started.strftime('%H:%M:%S')
     log_dic['ended_str'] = l.ended.strftime('%H:%M:%S')
     log_dic['delta_str'] = __sec_to_hhmmss_str(l.logdelta)

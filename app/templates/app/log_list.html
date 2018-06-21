@@ -54,6 +54,7 @@
 				<div class="col-9 even_row">
 				{% endif %}
 					{% for log_dic in task_dic.log_arr %}
+					<a href="{% url 'log_update' log_dic.log %}">
 					<div class="table-success log_line"
 						style="
 						left: {{ log_dic.started_percent }}%;
@@ -63,6 +64,7 @@
 						data-placement="top"
 						title="{{ log_dic.started_str }}~{{ log_dic.ended_str }}">
 					</div>
+					</a>
 					{% endfor %}	
 				</div>
 				{% empty %}

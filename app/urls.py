@@ -31,6 +31,8 @@ urlpatterns = [
 
     # log作成(stopwatch)
     path('task_stopwatch/<int:pk>/', views.task_stopwatch, name='task_stopwatch'),
+    # log更新画面
+    path('log/update/<int:pk>', views.log_update, name='log_update'),
     # log一覧画面(日付指定)
     path('log/', views.log_list, name='log_list'),
     # log一覧表示(期間指定)

@@ -1,5 +1,5 @@
 from django import forms
-from .models import Task,Group
+from .models import Task,Group,Log
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from django.db.models.fields import CharField
@@ -26,3 +26,13 @@ class GroupForm(forms.ModelForm):
     class Meta:
         model = Group
         fields = ('name', )
+
+class LogForm(forms.Form):
+    # class Meta:
+    #     model = Log
+    #     fields = ('task','logdate','started','ended',)
+    #     widgets = {'task': forms.Select(attrs={'disabled':True})}
+    id = forms.CharField()
+    task = forms.TextInput()
+    started = forms.DateTimeInput()
+    ended = forms.DateTimeInput()
