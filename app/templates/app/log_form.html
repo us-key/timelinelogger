@@ -2,6 +2,103 @@
 {% load crispy_forms_tags %}
 {% block content %}
 {{ forms.certifications.errors }}
+<script>
+$(function() {
+    $('.log_form_class').on('submit', function(){
+        // エラーメッセージクリア
+        $('#started_err_msg').remove();
+        $('#ended_err_msg').remove();
+
+        // 入力チェック
+        started = $('input#id_started').val();
+        ended = $('input#id_ended').val();
+        err_flg = false;
+
+        // 1.必須チェック
+        // 2.日付フォーマットチェック yyyy/mm/dd HH:ii:ss
+        if (started == "") {
+            $('div#id_started').append(
+                '<p id="started_err_msg" class="err_msg">入力してください。</p>'
+            );
+            err_flg = true;
+        } else if (!isValidDateTime(started)) {
+            $('div#id_started').append(
+                '<p id="started_err_msg" class="err_msg">日付は正しいフォーマットで入力してください。</p>'
+            );
+            err_flg = true;
+        }
+        if (ended == "") {
+            $('div#id_ended').append(
+                '<p id="ended_err_msg" class="err_msg">入力してください。</p>'
+            );
+            err_flg = true;
+        } else if (!isValidDateTime(ended)) {
+            $('div#id_ended').append(
+                '<p id="ended_err_msg" class="err_msg">日付は正しいフォーマットで入力してください。</p>'
+            );
+            err_flg = true;
+        }
+        if (err_flg) {
+            $('.save').removeClass('disabled');
+            return false;
+        }
+
+        // 3.同一日付チェック:手入力時は同一日付の入力のみ可とする。
+        if (!isSameDate(started, ended)) {
+            $('div#id_started').append(
+                '<p id="started_err_msg" class="err_msg">開始と終了は同じ日付を入力してください。</p>'
+            );
+            $('.save').removeClass('disabled');
+            return false;
+        }
+
+        // 4.時間前後チェック
+        if (started > ended) {
+            $('div#id_started').append(
+                '<p id="started_err_msg" class="err_msg">開始は終了より前の日時を入力してください。</p>'
+            );
+            $('.save').removeClass('disabled');
+            return false;	
+        }
+        return true;
+    });
+});
+function isValidDateTime(s) {
+    var matches = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/.exec(s);
+    if (!matches) {
+        return false;
+    }
+    var y = parseInt(matches[1]);
+    var m = parseInt(matches[2]);
+    var d = parseInt(matches[3]);
+    var h = parseInt(matches[4]);
+    var i = parseInt(matches[5]);
+    var s = parseInt(matches[6]);
+
+    var datetime = new Date(y,m-1,d,h,i,s,0);
+    if (datetime.getFullYear() != y
+        || datetime.getMonth() != m-1
+        || datetime.getDate() != d
+        || datetime.getHours() != h
+        || datetime.getMinutes() != i
+        || datetime.getSeconds() != s) {
+        return false;
+    }
+    return true;
+}
+function isSameDate(dt1, dt2) {
+    var d1_matches = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/.exec(dt1);
+    var d2_matches = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/.exec(dt2);
+
+    if (d1_matches[1] != d2_matches[1]
+        || d1_matches[2] != d2_matches[2]
+        || d1_matches[3] != d2_matches[3]) {
+        return false;
+    }
+    return true;
+}
+
+</script>
 <div class="container">
         <div class="row">
             <div class="col-12">
@@ -10,8 +107,8 @@
         </div>
         <div class="row">
             <div class="col-12">
-                <form method="post" id="obj_form">
-                {{ form }}
+                <form method="post" id="obj_form" class="log_form_class">
+                {% crispy form %}
     
                 {% csrf_token %}
                 </form>

@@ -3,6 +3,7 @@ from .models import Task,Group,Log
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from django.db.models.fields import CharField
+from datetimewidget.widgets import DateTimeWidget
 
 class UserForm(UserCreationForm):
     class Meta:
@@ -28,11 +29,23 @@ class GroupForm(forms.ModelForm):
         fields = ('name', )
 
 class LogForm(forms.Form):
-    # class Meta:
-    #     model = Log
-    #     fields = ('task','logdate','started','ended',)
-    #     widgets = {'task': forms.Select(attrs={'disabled':True})}
-    id = forms.CharField()
-    task = forms.TextInput()
-    started = forms.DateTimeInput()
-    ended = forms.DateTimeInput()
+    id = forms.CharField(widget=forms.HiddenInput)
+    task = forms.CharField(
+        required=False,
+        widget=forms.TextInput(
+            attrs={'readonly':True}
+        ))
+    
+    dateOptions = {
+        'format': 'yyyy-mm-dd HH:ii:ss',
+        'autoclose': True,
+        'showMeridian': True,
+    }
+
+    started = forms.DateTimeField(
+        widget=DateTimeWidget(
+            options=dateOptions, attrs={
+                'class': 'chk_required chk_format_datetime',
+                'readonly':False}
+        ))
+    ended = forms.DateTimeField(widget=DateTimeWidget(options=dateOptions, attrs={'readonly':False}))

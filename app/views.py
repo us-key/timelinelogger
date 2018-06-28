@@ -110,8 +110,12 @@ def log_update(request, pk):
     # submit時
     if request.method == 'POST':
         log = Log.objects.filter(pk=request.POST['id']).first()
-        log.started = request.POST['started']
-        log.ended = request.POST['ended']
+        print(log.started)
+        print(log.ended)
+        log.started = datetime.datetime.strptime(request.POST['started'], '%Y-%m-%d %H:%M:%S')
+        log.ended = datetime.datetime.strptime(request.POST['ended'], '%Y-%m-%d %H:%M:%S')
+        print(log.started)
+        print(log.ended)
         log.logdelta = (log.ended-log.started).seconds
         log.save()
         return redirect('log_list')
@@ -119,11 +123,12 @@ def log_update(request, pk):
     else:
         log = get_object_or_404(Log, pk=pk)
         print(log)
-        form =LogForm()
-        form.id = log.id
-        form.task = log.task.name
-        form.started = log.started
-        form.ended = log.ended
+        form =LogForm(initial = { #初期値セット
+            'id': log.id,
+            'task': log.task.name,
+            'started': log.started,
+            'ended': log.ended,
+        })
         print(form)
         return render(request, 'app/log_form.html', {'form': form})
 
@@ -133,6 +138,7 @@ def task_stopwatch(request, pk):
     if request.method == "POST":
         log = Log.objects.filter(pk=request.POST['task_pk']).first()
         log.ended = timezone.now()
+        print(log.ended)
         log.logdelta = (log.ended-log.started).seconds
         log.save()
         context = {
