@@ -14,6 +14,7 @@ import time
 
 from .models import Task,Group,Log
 from .forms import UserForm,TaskForm,GroupForm,LogForm
+from .decorators import unfinishedLogChecker
 
 # Create your views here.
 
@@ -33,7 +34,8 @@ class UserDeleteView(LoginRequiredMixin, DeleteView):
 # task一覧画面
 class TaskListView(LoginRequiredMixin, ListView):
     model = Task
-
+    
+    @unfinishedLogChecker
     def get_queryset(self):
         result = Task.objects.filter(user=self.request.user.id).order_by('finished', 'group',)
 
@@ -48,11 +50,13 @@ class TaskCreateView(LoginRequiredMixin, CreateView):
     model = Task
     form_class = TaskForm
 
+    @unfinishedLogChecker
     def get_form_kwargs(self):
         kwargs = super(TaskCreateView, self).get_form_kwargs()
         kwargs['group_queryset'] = Group.objects.filter(user = self.request.user)
         return kwargs
 
+    @unfinishedLogChecker
     def form_valid(self, form):
         task = form.save(commit=False)
         task.user = self.request.user
@@ -65,11 +69,13 @@ class TaskUpdateView(LoginRequiredMixin, UpdateView):
     form_class=TaskForm
     success_url = reverse_lazy('task_list')
 
+    @unfinishedLogChecker
     def get_form_kwargs(self):
         kwargs = super(TaskUpdateView, self).get_form_kwargs()
         kwargs['group_queryset'] = Group.objects.filter(user = self.request.user)
         return kwargs
 
+    @unfinishedLogChecker
     def form_valid(self, form):
         task = form.save(commit=False)
         task.user = self.request.user
@@ -94,6 +100,7 @@ class PopupGroupCreateView(LoginRequiredMixin, CreateView):
     model = Group
     form_class = GroupForm
 
+    @unfinishedLogChecker
     def form_valid(self, form):
         group = form.save(commit=False)
         group.user = self.request.user
@@ -106,6 +113,7 @@ class PopupGroupCreateView(LoginRequiredMixin, CreateView):
         return render(self.request, 'app/close.html', context)
 
 # ログ編集画面
+@unfinishedLogChecker
 def log_update(request, pk):
     # submit時
     if request.method == 'POST':
@@ -157,6 +165,7 @@ def task_stopwatch(request, pk):
 
 # log一覧画面
 @login_required
+@unfinishedLogChecker
 def log_list(request):
     # 日付で絞る
     d = timezone.now() # デフォルトは今日
@@ -271,6 +280,7 @@ def log_list(request):
 
 # log一覧画面(期間指定)
 @login_required
+@unfinishedLogChecker
 def log_list_period(request):
 
     # 日付で絞る
