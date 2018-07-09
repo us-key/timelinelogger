@@ -1,4 +1,5 @@
-from .models import Log 
+from django.shortcuts import render, redirect, get_object_or_404
+from .models import Log, Task
 
 # 完了していないログがあった場合、ストップウォッチ画面を開く
 def unfinishedLogChecker(function):
@@ -10,7 +11,9 @@ def unfinishedLogChecker(function):
         if len(log) == 0:
             return function(request, *args, **kwargs)
         else:
-            print(log.first())
+            log = log.first()
+            print(log)
+            kwargs['log'] = log
             return function(request, *args, **kwargs)
     
     return inner

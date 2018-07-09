@@ -30,7 +30,7 @@ urlpatterns = [
     path('popup/group/create/', PopupGroupCreateView.as_view(), name='popup_group_create'),
 
     # log作成(stopwatch)
-    path('task_stopwatch/<int:pk>/', views.task_stopwatch, name='task_stopwatch'),
+    path('task_stopwatch/<str:mode>/<int:pk>/', views.task_stopwatch, name='task_stopwatch'),
     # log更新画面
     path('log/update/<int:pk>', views.log_update, name='log_update'),
     # log一覧画面(日付指定)

@@ -25,6 +25,7 @@
 <script>
 	window.onload = stopwatch;
 	var stopwatchTime, startTime, stopwatchTimeAdd = 0;
+	startTime = new Date('{{started}}');
 	function stopwatch() {
 		if (startTime === undefined) {
 			startTime = new Date().getTime();

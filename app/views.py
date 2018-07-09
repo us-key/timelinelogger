@@ -14,7 +14,8 @@ import time
 
 from .models import Task,Group,Log
 from .forms import UserForm,TaskForm,GroupForm,LogForm
-from .decorators import unfinishedLogChecker
+# TODO 一旦デコレータなしで組んでみる
+#from .decorators import unfinishedLogChecker
 
 # Create your views here.
 
@@ -35,7 +36,7 @@ class UserDeleteView(LoginRequiredMixin, DeleteView):
 class TaskListView(LoginRequiredMixin, ListView):
     model = Task
     
-    @unfinishedLogChecker
+#    @unfinishedLogChecker
     def get_queryset(self):
         result = Task.objects.filter(user=self.request.user.id).order_by('finished', 'group',)
 
@@ -50,13 +51,13 @@ class TaskCreateView(LoginRequiredMixin, CreateView):
     model = Task
     form_class = TaskForm
 
-    @unfinishedLogChecker
+    # @unfinishedLogChecker
     def get_form_kwargs(self):
         kwargs = super(TaskCreateView, self).get_form_kwargs()
         kwargs['group_queryset'] = Group.objects.filter(user = self.request.user)
         return kwargs
 
-    @unfinishedLogChecker
+    # @unfinishedLogChecker
     def form_valid(self, form):
         task = form.save(commit=False)
         task.user = self.request.user
@@ -69,13 +70,13 @@ class TaskUpdateView(LoginRequiredMixin, UpdateView):
     form_class=TaskForm
     success_url = reverse_lazy('task_list')
 
-    @unfinishedLogChecker
+    # @unfinishedLogChecker
     def get_form_kwargs(self):
         kwargs = super(TaskUpdateView, self).get_form_kwargs()
         kwargs['group_queryset'] = Group.objects.filter(user = self.request.user)
         return kwargs
 
-    @unfinishedLogChecker
+    # @unfinishedLogChecker
     def form_valid(self, form):
         task = form.save(commit=False)
         task.user = self.request.user
@@ -100,7 +101,7 @@ class PopupGroupCreateView(LoginRequiredMixin, CreateView):
     model = Group
     form_class = GroupForm
 
-    @unfinishedLogChecker
+    # @unfinishedLogChecker
     def form_valid(self, form):
         group = form.save(commit=False)
         group.user = self.request.user
@@ -113,7 +114,7 @@ class PopupGroupCreateView(LoginRequiredMixin, CreateView):
         return render(self.request, 'app/close.html', context)
 
 # ログ編集画面
-@unfinishedLogChecker
+# @unfinishedLogChecker
 def log_update(request, pk):
     # submit時
     if request.method == 'POST':
@@ -142,7 +143,7 @@ def log_update(request, pk):
 
 # popup stopwatch画面
 @login_required
-def task_stopwatch(request, pk):
+def task_stopwatch(request, mode, pk):
     if request.method == "POST":
         log = Log.objects.filter(pk=request.POST['task_pk']).first()
         log.ended = timezone.now()
@@ -158,15 +159,26 @@ def task_stopwatch(request, pk):
     else:
         #urlで指定されたkeyからタスクを取得、なければ404
         task = get_object_or_404(Task, pk=pk)
-        # log作成
-        log = Log.objects.create(task=task)
+        if mode == 'c':
+            # log作成
+            log = Log.objects.create(task=task)
+            started =timezone.now()
+        elif mode == 'u':
+            # log取得
+            # ログを再取得していてすごく無駄な処理なので要改修
+            log = Log.objects.filter(task=task, ended__isnull=True).order_by('task', '-started').first()
+            started = log.started
+            now = timezone.now()
+            delta = (now-started).total_seconds()
 
-        return render(request, 'app/task_stopwatch.html', {'task': task, 'log': log})
+        return render(request, 'app/task_stopwatch.html', {'task': task, 'log': log, 'started': started})
 
 # log一覧画面
 @login_required
-@unfinishedLogChecker
+# @unfinishedLogChecker
 def log_list(request):
+
+    unfinished_log = __unfinishedLogCheck(request)
     # 日付で絞る
     d = timezone.now() # デフォルトは今日
     log_date_str = request.GET.get('log_date')
@@ -276,12 +288,14 @@ def log_list(request):
         if fi_started <= x*3600 & x*3600 <= la_ended:
             hour_dic[x] = round(float(x*3600-fi_started)/sec_delta, 4)*100
 
-    return render(request, 'app/log_list.html', {'task_arr': task_arr, 'hour_dic': hour_dic})
+    return render(request, 'app/log_list.html', {'task_arr': task_arr, 'hour_dic': hour_dic, 'unfinished_log': unfinished_log})
 
 # log一覧画面(期間指定)
 @login_required
-@unfinishedLogChecker
+# @unfinishedLogChecker
 def log_list_period(request):
+
+    unfinished_log = __unfinishedLogCheck(request)
 
     # 日付で絞る
     df = timezone.localdate(timezone.now())+datetime.timedelta(days=-6)
@@ -351,7 +365,7 @@ def log_list_period(request):
 
     print(date_arr)
 
-    return render(request, 'app/log_list_period.html', {'task_arr': task_arr, 'date_arr': date_arr})
+    return render(request, 'app/log_list_period.html', {'task_arr': task_arr, 'date_arr': date_arr, 'unfinished_log': unfinished_log})
 
 # ログ1件分の情報を作成する
 def __create_log_dic(log_dic, l, fi_started, la_ended, sec_delta):
@@ -374,10 +388,26 @@ def __create_log_dic(log_dic, l, fi_started, la_ended, sec_delta):
 
 # 秒数から時分秒の文字列を作成する
 def __sec_to_hhmmss_str(total_sec):
+    l = __sec_to_hhmmss_list(total_sec)
+    ret_str = str(l[0]).zfill(2) + ":" + str(l[1]).zfill(2) + ":" + str(l[2]).zfill(2)
+    print(ret_str)
+    return ret_str
+
+# 秒数から時分秒をlistで返す
+def __sec_to_hhmmss_list(total_sec):
     print(str(total_sec))
     sec = total_sec % 60
     min = (total_sec // 60) % 60
     hour = total_sec // 3600
-    ret_str = str(hour).zfill(2) + ":" + str(min).zfill(2) + ":" + str(sec).zfill(2)
-    print(ret_str)
-    return ret_str
+    return [hour,min,sec]
+
+# 未完了のままになっているログがないかチェック
+def __unfinishedLogCheck(request):
+    log = Log.objects.filter(task__user=request.user.id, ended__isnull=True).order_by('task', '-started')
+    print(log)
+    if len(log) == 0:
+        return 
+    else:
+        log = log.first()
+        print(log)
+        return log

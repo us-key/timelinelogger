@@ -22,6 +22,13 @@
 </head>
 <body>
 	{% include './_base_nav.html' %}
+	{% if unfinished_log %}
+	<div class="alert alert-danger">
+		{{unfinished_log.task.name}} 開始：{{unfinished_log.started}}が未完了です。
+		<a href="javascript:void(0);"
+		onclick="window.open('{% url 'task_stopwatch' 'u' unfinished_log.task.pk %}','subwin','width=500,height=500');">開く</a>
+	</div>
+	{% endif %}
 
 	{% block content %}
 	{% endblock %}
