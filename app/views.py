@@ -239,8 +239,6 @@ def log_list(request):
                 prev_task_dic = task_arr[-1]
                 prev_task_dic['sum'] = __sec_to_hhmmss_str(task_sum)
                 print(prev_task_dic['sum'])
-                # TODO この詰めなおしが必要かどうか要確認
-                #task_arr[-1] = prev_task_dic
             task_id = l.task
             task = Task.objects.get(pk=l.task.id)
             # idが前回と異なる場合task_dicを新たに作る
@@ -272,8 +270,6 @@ def log_list(request):
     if len(task_arr) > 0:
         prev_task_dic = task_arr[-1]
         prev_task_dic['sum'] = __sec_to_hhmmss_str(task_sum)
-        # TODO この詰めなおしが必要かどうか要確認
-        #task_arr[-1] = prev_task_dic
 
     # ヘッダに表示する時間軸。時と時間軸中のパーセンテージ
     # 例: {'10': '1.25', '11': '55.25'}
