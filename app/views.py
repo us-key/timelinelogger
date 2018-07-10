@@ -5,6 +5,7 @@ from django.urls import reverse_lazy
 from django.views.generic.list import ListView
 from django.views.generic.edit import CreateView,UpdateView,DeleteView
 from django.contrib.auth.models import User
+from django.contrib import messages
 from django.utils import timezone
 from django.db import models
 from django.conf import settings
@@ -62,6 +63,9 @@ class TaskCreateView(LoginRequiredMixin, CreateView):
         task = form.save(commit=False)
         task.user = self.request.user
         task.save()
+        # message
+        msg = task.name + 'を登録しました。'
+        messages.success(self.request, msg)
         return redirect('task_list')
 
 # task更新画面
@@ -81,6 +85,9 @@ class TaskUpdateView(LoginRequiredMixin, UpdateView):
         task = form.save(commit=False)
         task.user = self.request.user
         task.save()
+        # message
+        msg = task.name + 'を更新しました。'
+        messages.success(self.request, msg)
         return redirect('task_list')
 
 # task削除画面
@@ -94,6 +101,9 @@ def task_finish(request, pk):
     task = get_object_or_404(Task, pk=pk)
     task.finished = True
     task.save()
+    # message
+    msg = task.name + 'を完了にしました。'
+    messages.success(request, msg)
     return redirect('task_list')
 
 # popup group登録画面
@@ -127,6 +137,9 @@ def log_update(request, pk):
         print(log.ended)
         log.logdelta = (log.ended-log.started).seconds
         log.save()
+        # message
+        msg = log.task.name + 'のログを更新しました。'
+        messages.success(request, msg)
         return redirect('log_list')
     # 画面表示時
     else:

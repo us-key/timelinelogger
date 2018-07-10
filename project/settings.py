@@ -138,3 +138,5 @@ FORMAT_MODULE_PATH = 'app.formats'
 MESSAGE_TAGS = {
     message_constants.ERROR: 'alert alert-danger',
 }
+
+MESSAGE_STORAGE = 'django.contrib.messages.storage.cookie.CookieStorage'
