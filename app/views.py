@@ -159,10 +159,37 @@ def log_update(request, pk):
 def task_stopwatch(request, mode, pk):
     if request.method == "POST":
         log = Log.objects.filter(pk=request.POST['task_pk']).first()
-        log.ended = timezone.now()
-        print(log.ended)
-        log.logdelta = (log.ended-log.started).seconds
-        log.save()
+        print(log.logdate)
+        # 終了が日をまたいでいた場合、2日分にログを分ける
+        if log.logdate != timezone.now().date():
+            # 開始日の分
+            tz = timezone.get_default_timezone()
+            log.ended = tz.localize(datetime.datetime(
+                log.logdate.year,
+                log.logdate.month,
+                log.logdate.day,
+                23,59,59,0
+            ))
+            print(log.ended)
+            log.logdelta = (log.ended-log.started).seconds
+            log.save()
+            # 終了日分
+            today_log = Log.objects.create(task=log.task)
+            today_log.started = tz.localize(datetime.datetime(
+                timezone.now().year,
+                timezone.now().month,
+                timezone.now().day,
+                0,0,0,0
+            ))
+            today_log.ended = timezone.now()
+            today_log.logdelta = (today_log.ended-today_log.started).seconds
+            today_log.save()
+        else:
+            log.ended = timezone.now()
+            print(log.ended)
+            log.logdelta = (log.ended-log.started).seconds
+            log.save()
+
         context = {
             'object_name': "",
             'object_pk': "",
@@ -191,7 +218,8 @@ def task_stopwatch(request, mode, pk):
 # @unfinishedLogChecker
 def log_list(request):
 
-    unfinished_log = __unfinishedLogCheck(request)
+    unfinished_log, type = __unfinishedLogCheck(request)
+        
     # 日付で絞る
     d = timezone.now() # デフォルトは今日
     log_date_str = request.GET.get('log_date')
@@ -297,14 +325,14 @@ def log_list(request):
         if fi_started <= x*3600 & x*3600 <= la_ended:
             hour_dic[x] = round(float(x*3600-fi_started)/sec_delta, 4)*100
 
-    return render(request, 'app/log_list.html', {'task_arr': task_arr, 'hour_dic': hour_dic, 'unfinished_log': unfinished_log})
+    return render(request, 'app/log_list.html', {'task_arr': task_arr, 'hour_dic': hour_dic, 'unfinished_log': unfinished_log, 'type': type,})
 
 # log一覧画面(期間指定)
 @login_required
 # @unfinishedLogChecker
 def log_list_period(request):
 
-    unfinished_log = __unfinishedLogCheck(request)
+    unfinished_log, type = __unfinishedLogCheck(request)
 
     # 日付で絞る
     df = timezone.localdate(timezone.now())+datetime.timedelta(days=-6)
@@ -374,7 +402,7 @@ def log_list_period(request):
 
     print(date_arr)
 
-    return render(request, 'app/log_list_period.html', {'task_arr': task_arr, 'date_arr': date_arr, 'unfinished_log': unfinished_log})
+    return render(request, 'app/log_list_period.html', {'task_arr': task_arr, 'date_arr': date_arr, 'unfinished_log': unfinished_log, 'type': type,})
 
 # ログ1件分の情報を作成する
 def __create_log_dic(log_dic, l, fi_started, la_ended, sec_delta):
@@ -415,8 +443,13 @@ def __unfinishedLogCheck(request):
     log = Log.objects.filter(task__user=request.user.id, ended__isnull=True).order_by('task', '-started')
     print(log)
     if len(log) == 0:
-        return 
+        return None,0
     else:
         log = log.first()
         print(log)
-        return log
+        # 開始から2日以上経過している場合：手で編集させる
+        # 開始が前日：再開or編集
+        if (timezone.now().date()-log.logdate).days >= 2:
+            return log,1
+        else:
+            return log,2

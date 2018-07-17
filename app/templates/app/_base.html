@@ -23,24 +23,30 @@
 <body>
 	<script>
 		$(function(){
-			$('.alert').delay(2500).fadeOut(500);
+			$('.flashmsg').delay(2500).fadeOut(500);
 		});
 	</script>
 	{% include './_base_nav.html' %}
-	<!-- 未完了ログの表示 -->
-	{% if unfinished_log %}
-	<div class="alert alert-danger">
-		{{unfinished_log.task.name}} 開始：{{unfinished_log.started}}が未完了です。
-		<a href="javascript:void(0);"
-		onclick="window.open('{% url 'task_stopwatch' 'u' unfinished_log.task.pk %}','subwin','width=500,height=500');">開く</a>
+	<div class="msg-area">
+		<!-- 未完了ログの表示 -->
+		{% if unfinished_log %}
+		<div class="alert alert-danger">
+			{{unfinished_log.task.name}} 開始：{{unfinished_log.started}}が未完了です。
+			{% if type is 1 %}
+			開始から2日以上経っています。終了時間を編集してください。
+			<a href="{% url 'log_update' unfinished_log.pk %}">編集</a>
+			{% elif type is 2 %}
+			<a href="javascript:void(0);"
+			onclick="window.open('{% url 'task_stopwatch' 'u' unfinished_log.task.pk %}','subwin','width=500,height=500');">開く</a>
+			{% endif %}
+		</div>
+		{% endif %}
+		{% if messages %}
+			{% for message in messages %}
+			<div {% if message.tags %} class="flashmsg alert alert-{{message.tags}}"{% endif %}>{{ message }}</div>
+			{% endfor %}
+		{% endif %}
 	</div>
-	{% endif %}
-	{% if messages %}
-		{% for message in messages %}
-		<div {% if message.tags %} class="alert alert-{{message.tags}}"{% endif %}>{{ message }}</div>
-		{% endfor %}
-	{% endif %}
-
 	{% block content %}
 	{% endblock %}
 	<script src="{% static 'app/js/app.js' %}"></script>
