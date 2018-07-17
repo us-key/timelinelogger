@@ -96,9 +96,13 @@ function add_log(name, pk){
 						<th></th>
 						{% for head_d in date_arr %}
 						<th class="text-center">
+							{% if head_d != 'SUM' %}
 							<a href="{% url 'log_list' %}?log_date={{ head_d|slash_to_dash }}">
+							{% endif %}
 								{{ head_d }}
+							{% if head_d != 'SUM' %}
 							</a>
+							{% endif %}
 						</th>
 						{% endfor %}
 					</tr>

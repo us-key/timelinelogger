@@ -347,6 +347,9 @@ def log_list_period(request):
         dt = datetime.date(dtt.year, dtt.month, dtt.day)
     # 日付でフィルタ
     log = Log.objects.filter(task__user=request.user.id, logdate__gte=df, logdate__lte=dt, ended__isnull=False)
+    # 期間中の集計
+    log_sum = log.values('task').annotate(sum=models.Sum('logdelta'))
+    print("log_sum:" + str(log_sum))
     # 日付毎に集計
     log = log.values('task','logdate').annotate(sum=models.Sum('logdelta'))
     
@@ -369,6 +372,13 @@ def log_list_period(request):
             task_dic['group'] = task.group
             # log_arrを新たに作る
             log_arr = []
+            for l_s in log_sum:
+                if l_s['task'] == l['task']:
+                    sum_dic = {}
+                    sum_dic['logdate'] = 'SUM'
+                    sum_dic['sum'] = l_s['sum']
+                    sum_dic['sum_str'] = __sec_to_hhmmss_str(l_s['sum'])
+                    log_arr.append(sum_dic)
             log_arr.append(l)
             task_dic['log_arr'] = log_arr
             # 作ったtask_dicを詰める
@@ -395,7 +405,8 @@ def log_list_period(request):
 
     # 日付表示対象の日付
     log_date = df
-    date_arr = [log_date.strftime('%Y/%m/%d')]
+    date_arr = ['SUM']
+    date_arr.append(log_date.strftime('%Y/%m/%d'))
     while log_date != dt:
         log_date = log_date + datetime.timedelta(days=1)
         date_arr.append(log_date.strftime('%Y/%m/%d'))
