@@ -34,10 +34,12 @@
 			{{unfinished_log.task.name}} 開始：{{unfinished_log.started}}が未完了です。
 			{% if type is 1 %}
 			開始から2日以上経っています。終了時間を編集してください。
-			<a href="{% url 'log_update' unfinished_log.pk %}">編集</a>
+			<a href="{% url 'log_update' unfinished_log.pk %}"
+			   class="alert-link">編集</a>
 			{% elif type is 2 %}
 			<a href="javascript:void(0);"
-			onclick="window.open('{% url 'task_stopwatch' 'u' unfinished_log.task.pk %}','subwin','width=500,height=500');">開く</a>
+			   onclick="window.open('{% url 'task_stopwatch' 'u' unfinished_log.task.pk %}','subwin','width=500,height=500');"
+			   class="alert-link">開く</a>
 			{% endif %}
 		</div>
 		{% endif %}

@@ -37,7 +37,7 @@ class LogForm(forms.Form):
         ))
     
     dateOptions = {
-        'format': 'yyyy-mm-dd HH:ii:ss',
+        'format': 'yyyy-mm-dd hh:ii:ss',
         'autoclose': True,
         'showMeridian': True,
     }
