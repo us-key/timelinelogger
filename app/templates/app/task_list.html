@@ -33,31 +33,45 @@
 				       id="finished_id"
 				       name="contain_fin"
 				       value={{ request.GET|contain_fin }}/>
-				<ul>
+				<div class="list-group">
 					{% for task in object_list %}
-					<li>
-						{% if task.finished %}
-							[済]
-						{% else %}
-						<a href="javascript:void(0);"
-						   onclick="window.open('{% url 'task_stopwatch' 'c' task.pk %}','subwin','width=500,height=500');">
-							▶
-						</a>
-						<a href="{% url 'task_finish' task.pk %}">
-							[✔]
-						</a>
-						{% endif %}
-						<a href="{% url 'task_update' task.pk %}">
-							[{{task.group}}]{{task}}
-						</a>
-						<a href="{% url 'task_delete' task.pk %}">
-							[×]
-						</a>
-					</li>
+					<div class="list-group-item d-flex flex-column align-item-start list-group-item-action">
+						<div class="d-flex justify-content-between">
+							<h5 class="mb-1">
+								<a href="{% url 'task_update' task.pk %}">
+										[{{task.group}}]{{task}}
+								</a>
+							</h5>
+							{% if task.finished %}
+								<span class="badge badge-secondary badge-pill">済</span>
+							{% else %}
+							<a href="javascript:void(0);"
+							onclick="window.open('{% url 'task_stopwatch' 'c' task.pk %}','subwin','width=500,height=500');">
+								<span class="badge badge-primary badge-pill">
+									▶
+								</span>
+							</a>
+							{% endif %}
+						</div>
+						<div>
+							{% if not task.finished %}
+							<a href="{% url 'task_finish' task.pk %}">
+								<span class="badge badge-primary badge-pill">
+								✔
+								</span>
+							</a>
+							{% endif %}
+							<a href="{% url 'task_delete' task.pk %}">
+								<span class="badge badge-danger badge-pill">
+									×
+								</span>
+							</a>
+						</div>
+					</div>
 					{% empty %}
-					<li>タスクはありません</li>
+					<div>タスクはありません</div>
 					{% endfor %}
-				</ul>
+				</div>
 		</div>
 	</div>
 </div>
