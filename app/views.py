@@ -97,9 +97,13 @@ class TaskDeleteView(LoginRequiredMixin, DeleteView):
 
 # task完了
 @login_required
-def task_finish(request, pk):
+def task_finish(request, pk, flg):
     task = get_object_or_404(Task, pk=pk)
-    task.finished = True
+    if flg == 1:
+        task.finished = True
+    else:
+        task.finished = False
+    
     task.save()
     # message
     msg = task.name + 'を完了にしました。'

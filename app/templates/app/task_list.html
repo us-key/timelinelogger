@@ -55,11 +55,17 @@
 						</div>
 						<div>
 							{% if not task.finished %}
-							<a href="{% url 'task_finish' task.pk %}">
+							<a href="{% url 'task_finish' task.pk 1 %}">
 								<span class="badge badge-primary badge-pill">
 								✔
 								</span>
 							</a>
+							{% else %}
+							<a href="{% url 'task_finish' task.pk 0 %}">
+								<span class="badge badge-secondary badge-pill">
+								未完了に戻す
+								</span>
+							</a>			
 							{% endif %}
 							<a href="{% url 'task_delete' task.pk %}">
 								<span class="badge badge-danger badge-pill">

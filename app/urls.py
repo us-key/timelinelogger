@@ -24,7 +24,7 @@ urlpatterns = [
     # task削除画面
     path('task/delete/<int:pk>', TaskDeleteView.as_view(), name='task_delete'),
     # task完了
-    path('task/finish/<int:pk>', views.task_finish, name='task_finish'),
+    path('task/finish/<int:pk>/<int:flg>', views.task_finish, name='task_finish'),
 
     # (popup)group作成
     path('popup/group/create/', PopupGroupCreateView.as_view(), name='popup_group_create'),
