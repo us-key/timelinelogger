@@ -9,21 +9,21 @@
 <div class="container">
 	<div class="row">
 		<div class="col-12">
-			<form method="get" action="" id="log_date_form">
-				<h2 class="text-center">
-					ログ一覧
-				</h2>
-				<a href="{% url 'log_list_period' %}">期間指定</a>
-				<div class="form-group" for="log_date_id">
-					<label for="">日付：</label>
-					<input class="form-control"
-						id="log_date_id"
-						name="log_date"
-						type="date"
-						value={{ request.GET|log_date }}
-						required />
+			<h2 class="text-center">
+				ログ一覧
+			</h2>
+			<a href="{% url 'log_list_period' %}">期間指定</a>
+			<form class="input-group" method="get" action="" id="log_date_form">
+				<label for="log_date_id">日付：</label>
+				<input class="form-control"
+					id="log_date_id"
+					name="log_date"
+					type="date"
+					value={{ request.GET|log_date }}
+					required />
+				<div class="input-group-append">
+					<button class="btn btn-primary float-right">表示</button>
 				</div>
-				<button class="btn">表示</button>
 			</form>
 		</div>
 	</div>

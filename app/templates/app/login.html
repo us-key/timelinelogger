@@ -47,17 +47,12 @@
 	<div class="row">
 		<div class="col-12">
 			<input type="submit"
-				   class="btn btn-outline-secondary"
+				   class="btn btn-primary float-right"
 				   value="login" />
 			<input type="hidden" name="next" value="{{ next }}" />
+			<small><a href="{% url 'user_create'%}">ユーザー登録</a></small>
 		</div>
 	</div>
-
 	</form>
-	<div class="row">
-		<p><a href="{% url 'user_create'%}">ユーザー登録</a></p>
-	</div>
 </div>
-
-
 {% endblock %}

@@ -16,15 +16,15 @@
 			<h2 class="text-center">タスク一覧</h2>
 		</div>
 		<div class="col-12">
-			<a class="btn btn-outline-secondary" href="{% url 'task_create' %}">タスク追加</a>
-			<button class="btn btn-outline-secondary">
+			<a class="btn btn-primary" href="{% url 'task_create' %}">タスク追加</a>
+			<button class="btn btn-secondary">
 				{% if request.GET.contain_fin != '1/'%}
 				完了済タスク表示
 				{% else %}
 				未完了タスクのみ表示
 				{% endif %}
 			</button>
-			<a class="btn btn-outline-secondary" href="{% url 'log_list' %}">ログ</a>
+			<a class="btn btn-warning float-right" href="{% url 'log_list' %}">ログ</a>
 		</div>
 	</div>
 	<div class="row">
