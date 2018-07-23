@@ -139,6 +139,7 @@ def log_update(request, pk):
         log.ended = datetime.datetime.strptime(request.POST['ended'], '%Y-%m-%d %H:%M:%S')
         print(log.started)
         print(log.ended)
+        log.logdate = log.started
         log.logdelta = (log.ended-log.started).seconds
         log.save()
         # message
