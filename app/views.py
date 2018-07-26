@@ -42,7 +42,7 @@ class TaskListView(LoginRequiredMixin, ListView):
         result = Task.objects.filter(user=self.request.user.id).order_by('finished', 'group',)
 
         # 「完了含む」を押したとき以外
-        if self.request.GET.get('contain_fin') != "1/":
+        if self.request.GET.get('contain_fin') != "1":
             result = result.filter(finished = False)
 
         return result
@@ -159,6 +159,14 @@ def log_update(request, pk):
         print(form)
         return render(request, 'app/log_form.html', {'form': form})
 
+def log_delete(request):
+    log = get_object_or_404(Log, pk=request.POST['delLogId'])
+    log.delete()
+    msg = 'ログを削除しました。'
+    messages.success(request, msg)
+    return redirect('log_list')
+
+
 # popup stopwatch画面
 @login_required
 def task_stopwatch(request, mode, pk):
@@ -222,7 +230,6 @@ def task_stopwatch(request, mode, pk):
 @login_required
 # @unfinishedLogChecker
 def log_list(request):
-
     unfinished_log, type = __unfinishedLogCheck(request)
         
     # 日付で絞る

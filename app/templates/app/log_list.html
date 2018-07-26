@@ -1,6 +1,13 @@
 {% extends "./_base.html" %}
 {% block content %}
 {% load custom_filters %}
+<script>
+	$(function(){
+		$('#delModalId').on('click', function(){
+			$('#delLogId').val($('#passedLogId').val());
+		});
+	});
+</script>
 <div class="container">
 	<div class="row">
 		<div class="col-12">
@@ -84,17 +91,55 @@
 				<!-- サマリ行 -->
 				<div class="col-4 summary_row">[{{ task_dic.group }}]{{ task_dic.name }}</div>
 				<div class="col-5 summary_row">合計</div>
-				<div class="col-3 summary_row">{{ task_dic.sum }}</div>
+				<div class="col-2 summary_row">{{ task_dic.sum }}</div>
+				<div class="col-1 summary_row"></div>
 				{% for log_dic in task_dic.log_arr %}
 				<div class="col-4"></div>
 				<div class="col-2"> {{ log_dic.started_str }}</div>
 				<div class="col-1">~</div>
 				<div class="col-2">{{ log_dic.ended_str }}</div>
 				<div class="col-2">{{ log_dic.delta_str }}</div>
+				<div class="col-1">
+					<a href="#" data-toggle="modal" data-target="#delModal" id="delModalId">
+						<input type="hidden" id="passedLogId" value={{ log_dic.log }} />
+						<span class="badge badge-danger badge-pill">
+							<span aria-hidden="true">&times;</span>
+						</span>
+					</a>
+				</div>
 				{% endfor %}
 				{% endfor %}
 			</div>
 		</div>
+	</div>
+</div>
+<!-- 削除確認モーダル -->
+<div class="modal fade" id="delModal" tabindex="-1" role="dialog" aria-labelledby="delModalLabel" aria-hidden="true">
+	<div class="modal-dialog" role="document">
+		<form method="post" action="{% url 'log_delete' %}" id="delLogForm">
+			{% csrf_token %}
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="delModalLabel">
+						確認
+					</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					削除しますか？
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-outline-secondary"data-dismiss="modal">戻る</button>
+					<button type="submit" class="btn btn-danger" id="delBtn">削除</button>
+				</div>
+				<div>
+					<!-- 隠し：ログのID -->
+					<input type="hidden" name="delLogId" id="delLogId" />
+				</div>
+			</div>
+		</form>
 	</div>
 </div>
 {% endblock %}

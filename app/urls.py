@@ -33,6 +33,8 @@ urlpatterns = [
     path('task_stopwatch/<str:mode>/<int:pk>/', views.task_stopwatch, name='task_stopwatch'),
     # log更新画面
     path('log/update/<int:pk>', views.log_update, name='log_update'),
+    # log削除
+    path('log/delete', views.log_delete, name='log_delete'),
     # log一覧画面(日付指定)
     path('log/', views.log_list, name='log_list'),
     # log一覧表示(期間指定)
