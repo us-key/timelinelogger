@@ -79,7 +79,6 @@ WSGI_APPLICATION = 'project.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/2.0/ref/settings/#databases
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -148,3 +147,7 @@ try:
     from .local_settings import *
 except ImportError:
     pass
+
+if not DEBUG:
+    import django_heroku
+    django_heroku.settings(locals())

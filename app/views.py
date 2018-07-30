@@ -239,7 +239,7 @@ def log_list(request):
         dt = datetime.datetime.strptime(log_date_str, '%Y-%m-%d')
         d = datetime.date(dt.year, dt.month, dt.day)
 
-    log = Log.objects.filter(task__user=request.user.id, logdate=d, ended__isnull=False).order_by('task', '-started')
+    log = Log.objects.filter(task__user=request.user.id, logdate=d, ended__isnull=False).order_by('task__group', 'task', '-started')
     print(log)
     
     # 時間軸で表示するため、時間軸全体に対するパーセンテージを取得
@@ -358,7 +358,7 @@ def log_list_period(request):
         dtt = datetime.datetime.strptime(log_to_str, '%Y-%m-%d')
         dt = datetime.date(dtt.year, dtt.month, dtt.day)
     # 日付でフィルタ
-    log = Log.objects.filter(task__user=request.user.id, logdate__gte=df, logdate__lte=dt, ended__isnull=False)
+    log = Log.objects.filter(task__user=request.user.id, logdate__gte=df, logdate__lte=dt, ended__isnull=False).order_by('task__group', 'task')
     # 期間中の集計
     log_sum = log.values('task').annotate(sum=models.Sum('logdelta'))
     print("log_sum:" + str(log_sum))
