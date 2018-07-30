@@ -26,10 +26,10 @@ STATIC_DIRS = (os.path.join(BASE_DIR, 'static'),)
 SECRET_KEY = '^i%wiqp$vmt=1z)gfca%edxd@-3625hg2#4-7$8^440_=$skt@'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
-
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Application definition
 
@@ -86,6 +86,9 @@ DATABASES = {
     }
 }
 
+DATABASES['default'] = dj_database_url.config()
+
+
 
 # Password validation
 # https://docs.djangoproject.com/en/2.0/ref/settings/#auth-password-validators
@@ -141,3 +144,8 @@ MESSAGE_TAGS = {
 }
 
 MESSAGE_STORAGE = 'django.contrib.messages.storage.cookie.CookieStorage'
+
+try:
+    from .local_settings import *
+except ImportError:
+    pass
