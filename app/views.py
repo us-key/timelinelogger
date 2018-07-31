@@ -39,6 +39,7 @@ class TaskListView(LoginRequiredMixin, ListView):
     
 #    @unfinishedLogChecker
     def get_queryset(self):
+        print("----------[TaskListView#get_queryset]start-----------")
         result = Task.objects.filter(user=self.request.user.id).order_by('finished', 'group',)
 
         # 「完了含む」を押したとき以外
@@ -54,12 +55,14 @@ class TaskCreateView(LoginRequiredMixin, CreateView):
 
     # @unfinishedLogChecker
     def get_form_kwargs(self):
+        print("----------[TaskCreateView#get_form_kwargs]start-----------")
         kwargs = super(TaskCreateView, self).get_form_kwargs()
         kwargs['group_queryset'] = Group.objects.filter(user = self.request.user)
         return kwargs
 
     # @unfinishedLogChecker
     def form_valid(self, form):
+        print("----------[TaskCreateView#form_valid]start-----------")
         task = form.save(commit=False)
         task.user = self.request.user
         task.save()
@@ -76,12 +79,14 @@ class TaskUpdateView(LoginRequiredMixin, UpdateView):
 
     # @unfinishedLogChecker
     def get_form_kwargs(self):
+        print("----------[TaskUpdateView#get_form_kwargs]start-----------")
         kwargs = super(TaskUpdateView, self).get_form_kwargs()
         kwargs['group_queryset'] = Group.objects.filter(user = self.request.user)
         return kwargs
 
     # @unfinishedLogChecker
     def form_valid(self, form):
+        print("----------[TaskUpdateView#form_valid]start-----------")
         task = form.save(commit=False)
         task.user = self.request.user
         task.save()
@@ -98,6 +103,7 @@ class TaskDeleteView(LoginRequiredMixin, DeleteView):
 # task完了
 @login_required
 def task_finish(request, pk, flg):
+    print("----------[#task_finish]start-----------")
     task = get_object_or_404(Task, pk=pk)
     if flg == 1:
         task.finished = True
@@ -117,6 +123,7 @@ class PopupGroupCreateView(LoginRequiredMixin, CreateView):
 
     # @unfinishedLogChecker
     def form_valid(self, form):
+        print("----------[PopupGroupCreateView#form_valid]start-----------")
         group = form.save(commit=False)
         group.user = self.request.user
         group.save()
@@ -130,15 +137,13 @@ class PopupGroupCreateView(LoginRequiredMixin, CreateView):
 # ログ編集画面
 # @unfinishedLogChecker
 def log_update(request, pk):
+    print("----------[#log_update]start-----------")
+    print("request.method:" + request.method)
     # submit時
     if request.method == 'POST':
         log = Log.objects.filter(pk=request.POST['id']).first()
-        print(log.started)
-        print(log.ended)
         log.started = datetime.datetime.strptime(request.POST['started'], '%Y-%m-%d %H:%M:%S')
         log.ended = datetime.datetime.strptime(request.POST['ended'], '%Y-%m-%d %H:%M:%S')
-        print(log.started)
-        print(log.ended)
         log.logdate = log.started
         log.logdelta = (log.ended-log.started).seconds
         log.save()
@@ -149,17 +154,16 @@ def log_update(request, pk):
     # 画面表示時
     else:
         log = get_object_or_404(Log, pk=pk)
-        print(log)
         form =LogForm(initial = { #初期値セット
             'id': log.id,
             'task': log.task.name,
             'started': log.started,
             'ended': log.ended,
         })
-        print(form)
         return render(request, 'app/log_form.html', {'form': form})
 
 def log_delete(request):
+    print("----------[#log_delete]start-----------")
     log = get_object_or_404(Log, pk=request.POST['delLogId'])
     log.delete()
     msg = 'ログを削除しました。'
@@ -170,9 +174,11 @@ def log_delete(request):
 # popup stopwatch画面
 @login_required
 def task_stopwatch(request, mode, pk):
+    print("----------[#task_stopwatch]start-----------")
     if request.method == "POST":
         log = Log.objects.filter(pk=request.POST['task_pk']).first()
-        print(log.logdate)
+        print("log.logdate: " + str(log.logdate))
+        print("timezone.now().date(): " + str(timezone.now().date()))
         # 終了が日をまたいでいた場合、2日分にログを分ける
         if log.logdate != timezone.now().date():
             # 開始日の分
@@ -183,7 +189,6 @@ def task_stopwatch(request, mode, pk):
                 log.logdate.day,
                 23,59,59,0
             ))
-            print(log.ended)
             log.logdelta = (log.ended-log.started).seconds
             log.save()
             # 終了日分
@@ -199,7 +204,6 @@ def task_stopwatch(request, mode, pk):
             today_log.save()
         else:
             log.ended = timezone.now()
-            print(log.ended)
             log.logdelta = (log.ended-log.started).seconds
             log.save()
 
@@ -230,6 +234,7 @@ def task_stopwatch(request, mode, pk):
 @login_required
 # @unfinishedLogChecker
 def log_list(request):
+    print("----------[#log_list]start-----------")
     unfinished_log, type = __unfinishedLogCheck(request)
         
     # 日付で絞る
@@ -240,7 +245,6 @@ def log_list(request):
         d = datetime.date(dt.year, dt.month, dt.day)
 
     log = Log.objects.filter(task__user=request.user.id, logdate=d, ended__isnull=False).order_by('task__group', 'task', '-started')
-    print(log)
     
     # 時間軸で表示するため、時間軸全体に対するパーセンテージを取得
     # ログ毎に取る値：開始時間、終了時間、開始時間の%、時間幅の%
@@ -266,9 +270,7 @@ def log_list(request):
     for l in log:
         default_timezone = pytz.timezone(settings_tz)
         l.started = default_timezone.normalize(l.started.astimezone(default_timezone))
-        print(l.started)
         l.ended = default_timezone.normalize(l.ended.astimezone(default_timezone))
-        print(l.ended)
 
         st_sec = (l.started.hour*60+l.started.minute)*60+l.started.second
         ed_sec = (l.ended.hour*60+l.ended.minute)*60+l.ended.second
@@ -291,7 +293,6 @@ def log_list(request):
             if len(task_arr) > 0:
                 prev_task_dic = task_arr[-1]
                 prev_task_dic['sum'] = __sec_to_hhmmss_str(task_sum)
-                print(prev_task_dic['sum'])
             task_id = l.task
             task = Task.objects.get(pk=l.task.id)
             # idが前回と異なる場合task_dicを新たに作る
@@ -343,7 +344,7 @@ def log_list(request):
 @login_required
 # @unfinishedLogChecker
 def log_list_period(request):
-
+    print("----------[#log_list_period]start-----------")
     unfinished_log, type = __unfinishedLogCheck(request)
 
     # 日付で絞る
@@ -361,7 +362,6 @@ def log_list_period(request):
     log = Log.objects.filter(task__user=request.user.id, logdate__gte=df, logdate__lte=dt, ended__isnull=False).order_by('task__group', 'task')
     # 期間中の集計
     log_sum = log.values('task').annotate(sum=models.Sum('logdelta'))
-    print("log_sum:" + str(log_sum))
     # 日付毎に集計
     log = log.values('task','logdate').annotate(sum=models.Sum('logdelta'))
     
@@ -404,7 +404,6 @@ def log_list_period(request):
             task_dic['log_arr'] = log_arr
             task_arr[-1] = task_dic
            
-    print(task_arr)
 
     # 同じタスクのログはまとめる
     # [{'task':22,
@@ -423,8 +422,6 @@ def log_list_period(request):
         log_date = log_date + datetime.timedelta(days=1)
         date_arr.append(log_date.strftime('%Y/%m/%d'))
 
-    print(date_arr)
-
     return render(request, 'app/log_list_period.html', {'task_arr': task_arr, 'date_arr': date_arr, 'unfinished_log': unfinished_log, 'type': type,})
 
 # ログ1件分の情報を作成する
@@ -433,16 +430,11 @@ def __create_log_dic(log_dic, l, fi_started, la_ended, sec_delta):
     log_dic['started_str'] = l.started.strftime('%H:%M:%S')
     log_dic['ended_str'] = l.ended.strftime('%H:%M:%S')
     log_dic['delta_str'] = __sec_to_hhmmss_str(l.logdelta)
-    print(log_dic['started_str'])
-    print(log_dic['ended_str'])
-    print(log_dic['delta_str'])
     # 開始時刻の全体に対するパーセンテージを取得
     st_sec = (l.started.hour*60+l.started.minute)*60+l.started.second - fi_started
     log_dic['started_percent'] = round(float(st_sec)/sec_delta,4)*100
-    print(log_dic['started_percent'])
     
     log_dic['delta_percent'] = round(float(l.logdelta)/sec_delta,4)*100
-    print(log_dic['delta_percent'])
 
     return log_dic
 
@@ -450,12 +442,10 @@ def __create_log_dic(log_dic, l, fi_started, la_ended, sec_delta):
 def __sec_to_hhmmss_str(total_sec):
     l = __sec_to_hhmmss_list(total_sec)
     ret_str = str(l[0]).zfill(2) + ":" + str(l[1]).zfill(2) + ":" + str(l[2]).zfill(2)
-    print(ret_str)
     return ret_str
 
 # 秒数から時分秒をlistで返す
 def __sec_to_hhmmss_list(total_sec):
-    print(str(total_sec))
     sec = total_sec % 60
     min = (total_sec // 60) % 60
     hour = total_sec // 3600
@@ -464,12 +454,10 @@ def __sec_to_hhmmss_list(total_sec):
 # 未完了のままになっているログがないかチェック
 def __unfinishedLogCheck(request):
     log = Log.objects.filter(task__user=request.user.id, ended__isnull=True).order_by('task', '-started')
-    print(log)
     if len(log) == 0:
         return None,0
     else:
         log = log.first()
-        print(log)
         # 開始から2日以上経過している場合：手で編集させる
         # 開始が前日：再開or編集
         if (timezone.now().date()-log.logdate).days >= 2:
