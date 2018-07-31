@@ -45,6 +45,19 @@ $(function() {
 			$('#to_err_msg').html("終了は今日以前の日付を入力してください。");
 			return false;
 		}
+
+		// 4.日数差チェック
+		// fromとtoの差が90日より大きい場合エラーとする
+		date_log_from = new Date(log_from);
+		date_log_to = new Date(log_to);
+		// ミリ秒で差分を取る
+		msDiff = date_log_to.getTime() - date_log_from.getTime();
+		// 1日の秒数で割って日数を算出,端数切捨て
+		daysDiff = Math.floor(msDiff / (1000*60*60*24));
+		if(++daysDiff > 90) {
+			$('#from_err_msg').html("期間が90日以内になるよう日付を入力してください。")
+			return false;
+		}
 	});
 });
 </script>
