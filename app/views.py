@@ -177,10 +177,11 @@ def task_stopwatch(request, mode, pk):
     print("----------[#task_stopwatch]start-----------")
     if request.method == "POST":
         log = Log.objects.filter(pk=request.POST['task_pk']).first()
+        now = datetime.datetime.now()
         print("log.logdate: " + str(log.logdate))
-        print("timezone.now().date(): " + str(timezone.now().date()))
+        print("datetime.datetime.now().date(): " + str(now.date()))
         # 終了が日をまたいでいた場合、2日分にログを分ける
-        if log.logdate != timezone.now().date():
+        if log.logdate != now.date():
             # 開始日の分
             tz = timezone.get_default_timezone()
             log.ended = tz.localize(datetime.datetime(

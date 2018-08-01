@@ -3,8 +3,9 @@
 {% load custom_filters %}
 <script>
 	$(function(){
-		$('#delModalId').on('click', function(){
-			$('#delLogId').val($('#passedLogId').val());
+		$('.delModalId').on('click', function(e){
+			var passVal = $(this).find('#passedLogId').val();
+			$('#delLogId').val(passVal);
 		});
 	});
 </script>
@@ -100,7 +101,7 @@
 				<div class="col-2">{{ log_dic.ended_str }}</div>
 				<div class="col-2">{{ log_dic.delta_str }}</div>
 				<div class="col-1">
-					<a href="#" data-toggle="modal" data-target="#delModal" id="delModalId">
+					<a href="#" data-toggle="modal" data-target="#delModal" class="delModalId">
 						<input type="hidden" id="passedLogId" value={{ log_dic.log }} />
 						<span class="badge badge-danger badge-pill">
 							<span aria-hidden="true">&times;</span>
