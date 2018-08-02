@@ -107,12 +107,13 @@ def task_finish(request, pk, flg):
     task = get_object_or_404(Task, pk=pk)
     if flg == 1:
         task.finished = True
+        msg = task.name + 'を完了にしました。'
     else:
         task.finished = False
-    
+        msg = task.name + 'を未完了にしました。'    
     task.save()
     # message
-    msg = task.name + 'を完了にしました。'
+    
     messages.success(request, msg)
     return redirect('task_list')
 
