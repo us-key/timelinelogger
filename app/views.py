@@ -115,7 +115,6 @@ def task_finish(request, pk, flg):
     # message
     
     messages.success(request, msg)
-    return redirect('task_list')
 
 # popup group登録画面
 class PopupGroupCreateView(LoginRequiredMixin, CreateView):
@@ -176,6 +175,8 @@ def log_delete(request):
 @login_required
 def task_stopwatch(request, mode, pk):
     print("----------[#task_stopwatch]start-----------")
+    unfinished_log = None #初期化しておく
+    type = None
     if request.method == "POST":
         log = Log.objects.filter(pk=request.POST['task_pk']).first()
         now = datetime.datetime.now()
@@ -183,27 +184,34 @@ def task_stopwatch(request, mode, pk):
         print("datetime.datetime.now().date(): " + str(now.date()))
         # 終了が日をまたいでいた場合、2日分にログを分ける
         if log.logdate != now.date():
-            # 開始日の分
-            tz = timezone.get_default_timezone()
-            log.ended = tz.localize(datetime.datetime(
-                log.logdate.year,
-                log.logdate.month,
-                log.logdate.day,
-                23,59,59,0
-            ))
-            log.logdelta = (log.ended-log.started).seconds
-            log.save()
-            # 終了日分
-            today_log = Log.objects.create(task=log.task)
-            today_log.started = tz.localize(datetime.datetime(
-                timezone.now().year,
-                timezone.now().month,
-                timezone.now().day,
-                0,0,0,0
-            ))
-            today_log.ended = timezone.now()
-            today_log.logdelta = (today_log.ended-today_log.started).seconds
-            today_log.save()
+            if (now.date() - log.logdate).days >= 2:
+                # TODO
+                unfinished_log = log
+                type = 1
+                print("error")
+            else:
+
+                # 開始日の分
+                tz = timezone.get_default_timezone()
+                log.ended = tz.localize(datetime.datetime(
+                    log.logdate.year,
+                    log.logdate.month,
+                    log.logdate.day,
+                    23,59,59,0
+                ))
+                log.logdelta = (log.ended-log.started).seconds
+                log.save()
+                # 終了日分
+                today_log = Log.objects.create(task=log.task)
+                today_log.started = tz.localize(datetime.datetime(
+                    timezone.now().year,
+                    timezone.now().month,
+                    timezone.now().day,
+                    0,0,0,0
+                ))
+                today_log.ended = timezone.now()
+                today_log.logdelta = (today_log.ended-today_log.started).seconds
+                today_log.save()
         else:
             log.ended = timezone.now()
             log.logdelta = (log.ended-log.started).seconds
@@ -250,17 +258,20 @@ def log_list(request):
     
     # 時間軸で表示するため、時間軸全体に対するパーセンテージを取得
     # ログ毎に取る値：開始時間、終了時間、開始時間の%、時間幅の%
-    # 同じタスクのログはまとめる
+    # 同じグループ、同じタスクのログはまとめる
     # ブラウザ問わずCSSは小数点2桁まで認識するようなので、3桁目で四捨五入する
     # 8秒以下のログは0.01%以下のため表示されない
-    # [{'task':22,
-    #  'name':'testtask',
-    #  'group:'testgroup',
-    #  'sum': '01:01:01'
-    #  'log_arr': [{'log':33, started_str':'09:01:15', 'ended_str':'09:31:15', 'delta_str':'00:30:00', 'started_percent': '37.59', 'delta_percent': '2.08'},
-    #              {...}
-    #        ]
-    # },{...}]
+    # [{'group':11,
+    #   'name':'testgroup',
+    #   'sum':'02:02:02',
+    #   'task_arr':
+    #   [{'task':22,
+    #     'name':'testtask',
+    #     'sum': '01:01:01',
+    #     'log_arr': [{'log':33, started_str':'09:01:15', 'ended_str':'09:31:15', 'delta_str':'00:30:00', 'started_percent': '37.59', 'delta_percent': '2.08'},
+    #                 {...}]
+    #    },{...}]
+    #  },{...}]
 
     # 時間軸の幅は最初の開始時刻～最後の終了時刻までにする
     fi_started = 24*60*60-1 # 最初の開始時刻(秒) 初期値は23時59分59秒
@@ -284,26 +295,49 @@ def log_list(request):
     sec_delta = la_ended - fi_started # 時間軸の幅の基準になる秒数
     print("fi_started:" + str(fi_started) + " la_ended:" + str(la_ended) + " sec_delta:" + str(sec_delta))
     
-    task_arr = [] # タスクごとの配列を詰める
-    task_dic = {} # タスクごとの配列(その日のログを詰める)
+    ret_arr = [] # 返却用配列：グループごとのdicを詰める
+    group_dic = {} # グループごとのdic
+    task_arr = [] # タスクごとのdicを詰める
+    task_dic = {} # タスクごとのdic(その日のログを詰める)
+    group_sum = 0 # グループごとの秒数の合計(文字列ではなく秒数。dicに詰める際に文字列変換)
     task_sum = 0 # タスクごとの秒数の合計(文字列ではなく秒数。dicに詰める際に文字列変換)
     log_arr = [] # その日のタスクのログ
+    group_id = None
     task_id = None
+
     for l in log:
-        if task_id != l.task:
-            # 前のタスク分のサマリを文字列に変換して詰める
-            if len(task_arr) > 0:
-                prev_task_dic = task_arr[-1]
+        # グループが前のログと異なる(=タスクが前のログと異なる)
+        if group_id != l.task.group.id:
+            print("group:" + str(l.task.group))
+            # 2件目以降のグループの場合
+            if len(ret_arr) > 0:
+                # 前のグループ分のサマリを文字列に変換して詰める
+                prev_group_dic = ret_arr[-1]
+                prev_group_dic['sum'] = __sec_to_hhmmss_str(group_sum)
+                # 前のタスク分のサマリを文字列に変換して詰める
+                tmp_task_arr = prev_group_dic['task_arr']
+                prev_task_dic = tmp_task_arr[-1]
                 prev_task_dic['sum'] = __sec_to_hhmmss_str(task_sum)
-            task_id = l.task
-            task = Task.objects.get(pk=l.task.id)
-            # idが前回と異なる場合task_dicを新たに作る
+
+            group_id = l.task.group.id
+            # group_dicを新たに作る
+            group_sum = l.logdelta # logdeltaも計算しなおし
+            group_dic = {}
+            group_dic['no'] = len(ret_arr)
+            group_dic['group'] = l.task.group.id
+            group_dic['name'] = l.task.group
+
+            # task_arrを新たに作る
+            task_arr = []
+            group_dic['task_arr'] = task_arr
             task_sum = l.logdelta # logdeltaも計算しなおし
+            task_id = l.task.id
             task_dic = {}
+            print("task:" + str(l.task))
             task_dic['no'] = len(task_arr)
             task_dic['task'] = l.task.id
-            task_dic['name'] = task
-            task_dic['group'] = task.group
+            task_dic['name'] = l.task
+
             # log_arrを新たに作る
             log_arr = []
             log_dic = {}
@@ -311,20 +345,51 @@ def log_list(request):
             task_dic['log_arr'] = log_arr
             # 作ったtask_dicを詰める
             task_arr.append(task_dic)
-        else:
-            # idが前回と同じ場合、task_arrの最後の要素を取り出し、
-            # log_arrのappendのみ実施して詰めなおす
-            task_sum += l.logdelta
-            task_dic = task_arr[-1]
-            log_arr = task_dic['log_arr']
-            log_dic = {}
-            log_arr.append(__create_log_dic(log_dic, l, fi_started, la_ended, sec_delta))
-            task_dic['log_arr'] = log_arr
+            # 作ったgroup_dicを詰める
+            ret_arr.append(group_dic)
 
-            task_arr[-1] = task_dic
+        # 前回とグループが同じ場合
+        else:
+            group_sum += l.logdelta
+            task_arr = ret_arr[-1]['task_arr']
+            if task_id != l.task.id:
+                # 前回と異なるタスクの場合
+                print("task:" + str(l.task))
+                # 前のタスク分のサマリを文字列に変換して詰める
+                if len(task_arr) > 0:
+                    prev_task_dic = task_arr[-1]
+                    prev_task_dic['sum'] = __sec_to_hhmmss_str(task_sum)
+                task_id = l.task
+                # task_dicを新たに作る
+                task_sum = l.logdelta # logdeltaも計算しなおし
+                task_dic = {}
+                task_dic['no'] = len(task_arr)
+                task_dic['task'] = l.task.id
+                task_dic['name'] = l.task
+
+                # log_arrを新たに作る
+                log_arr = []
+                log_dic = {}
+                log_arr.append(__create_log_dic(log_dic, l, fi_started, la_ended, sec_delta))
+                task_dic['log_arr'] = log_arr
+                # 作ったtask_dicを詰める
+                task_arr.append(task_dic)
+            else:
+                # idが前回と同じ場合、task_arrの最後の要素を取り出し、
+                # log_arrのappendのみ実施して詰めなおす
+                task_sum += l.logdelta
+                task_dic = task_arr[-1]
+                log_arr = task_dic['log_arr']
+                log_dic = {}
+                log_arr.append(__create_log_dic(log_dic, l, fi_started, la_ended, sec_delta))
+                task_dic['log_arr'] = log_arr
+                # TODO この詰めなおしって要るんだっけ？
+                task_arr[-1] = task_dic
     # 最後のタスクの合計がセットされない
-    if len(task_arr) > 0:
-        prev_task_dic = task_arr[-1]
+    if len(ret_arr) > 0:
+        prev_group_dic = ret_arr[-1]
+        prev_group_dic['sum'] = __sec_to_hhmmss_str(group_sum)
+        prev_task_dic = prev_group_dic['task_arr'][-1]
         prev_task_dic['sum'] = __sec_to_hhmmss_str(task_sum)
 
     # ヘッダに表示する時間軸。時と時間軸中のパーセンテージ
@@ -340,7 +405,9 @@ def log_list(request):
         if fi_started <= x*3600 & x*3600 <= la_ended:
             hour_dic[x] = round(float(x*3600-fi_started)/sec_delta, 4)*100
 
-    return render(request, 'app/log_list.html', {'task_arr': task_arr, 'hour_dic': hour_dic, 'unfinished_log': unfinished_log, 'type': type,})
+    print("ret_arr:" + str(ret_arr))
+
+    return render(request, 'app/log_list.html', {'ret_arr': ret_arr, 'hour_dic': hour_dic, 'unfinished_log': unfinished_log, 'type': type,})
 
 # log一覧画面(期間指定)
 @login_required

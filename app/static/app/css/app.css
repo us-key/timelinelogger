@@ -8,6 +8,9 @@
 .pos_absolute {
     position: absolute;
 }
+.g_summary_row {
+    background-color: rgba(0, 255, 0, 0.5);
+}
 .even_row, .summary_row {
     background-color: rgba(0,0,0,.05);
 }
