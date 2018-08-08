@@ -46,10 +46,9 @@
 				</div>
 				<!-- タスク毎のタイムライン -->
 				{% for group_dic in ret_arr %}
-				<div class="col-3 g_summary_row">
+					<div class="col-12 g_summary_row">
 						group:{{group_dic.name}}
 					</div>
-					<div class="col-9 g_summary_row"></div> 
 				{% for task_dic in group_dic.task_arr %}
 						{% if forloop.counter0|divisibleby:"2" %}
 							<div class="col-3">
@@ -96,27 +95,25 @@
 				{% for group_dic in ret_arr %}
 					<!-- グループサマリ行 -->
 					<div class="row">
-					<div class="col-4 g_summary_row">group: {{ group_dic.name }}</div>
-					<div class="col-5 g_summary_row">合計</div>
-					<div class="col-2 g_summary_row">{{ group_dic.sum }}</div>
+					<div class="col-8 g_summary_row">group: {{ group_dic.name }}</div>
+					<div class="col-3 g_summary_row">{{ group_dic.sum }}</div>
 					<div class="col-1 g_summary_row"></div>
 					</div>
 					{% for task_dic in group_dic.task_arr %}
 						<!-- タスクサマリ行 -->
 						<div class="row">
-						<div class="col-4 summary_row">
+						<div class="col-8 summary_row">
 							<a href="{% url 'task_update' task_dic.task %}">
 								{{ task_dic.name }}
 							</a>
 						</div>
-						<div class="col-5 summary_row">合計</div>
-						<div class="col-2 summary_row">{{ task_dic.sum }}</div>
+						<div class="col-3 summary_row">{{ task_dic.sum }}</div>
 						<div class="col-1 summary_row"></div>
 						</div>
 						{% for log_dic in task_dic.log_arr %}
 							<div class="row">
-							<div class="col-4"></div>
-							<div class="col-2"> 
+							<div class="col-1"></div>
+							<div class="col-3"> 
 								<a href="{% url 'log_update' log_dic.log %}">
 									{{ log_dic.started_str }}
 								</a>
@@ -126,12 +123,12 @@
 									~
 								</a>
 							</div>
-							<div class="col-2">
+							<div class="col-3">
 								<a href="{% url 'log_update' log_dic.log %}">
 									{{ log_dic.ended_str }}
 								</a>
 							</div>
-							<div class="col-2">
+							<div class="col-3">
 								<a href="{% url 'log_update' log_dic.log %}">
 									{{ log_dic.delta_str }}
 								</a>
