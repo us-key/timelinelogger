@@ -308,7 +308,6 @@ def log_list(request):
     for l in log:
         # グループが前のログと異なる(=タスクが前のログと異なる)
         if group_id != l.task.group.id:
-            print("group:" + str(l.task.group))
             # 2件目以降のグループの場合
             if len(ret_arr) > 0:
                 # 前のグループ分のサマリを文字列に変換して詰める
@@ -333,7 +332,6 @@ def log_list(request):
             task_sum = l.logdelta # logdeltaも計算しなおし
             task_id = l.task.id
             task_dic = {}
-            print("task:" + str(l.task))
             task_dic['no'] = len(task_arr)
             task_dic['task'] = l.task.id
             task_dic['name'] = l.task
@@ -354,7 +352,6 @@ def log_list(request):
             task_arr = ret_arr[-1]['task_arr']
             if task_id != l.task.id:
                 # 前回と異なるタスクの場合
-                print("task:" + str(l.task))
                 # 前のタスク分のサマリを文字列に変換して詰める
                 if len(task_arr) > 0:
                     prev_task_dic = task_arr[-1]
@@ -404,8 +401,6 @@ def log_list(request):
     for x in range(0,24,hour_span):
         if fi_started <= x*3600 & x*3600 <= la_ended:
             hour_dic[x] = round(float(x*3600-fi_started)/sec_delta, 4)*100
-
-    print("ret_arr:" + str(ret_arr))
 
     return render(request, 'app/log_list.html', {'ret_arr': ret_arr, 'hour_dic': hour_dic, 'unfinished_log': unfinished_log, 'type': type,})
 
