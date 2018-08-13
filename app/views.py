@@ -423,60 +423,188 @@ def log_list_period(request):
         dtt = datetime.datetime.strptime(log_to_str, '%Y-%m-%d')
         dt = datetime.date(dtt.year, dtt.month, dtt.day)
     # 日付でフィルタ
-    log = Log.objects.filter(task__user=request.user.id, logdate__gte=df, logdate__lte=dt, ended__isnull=False).order_by('task__group', 'task')
+    log = Log.objects.filter(task__user=request.user.id, logdate__gte=df, logdate__lte=dt, ended__isnull=False).order_by('task__group')
+    # サマリはSQLで実施
+    # 期間中のグループごとの集計
+    log_sum_grp = log.values('task__group').annotate(sum=models.Sum('logdelta'))
+    # 期間中のグループ・日付毎の集計
+    log_grp = log.values('task__group','logdate').annotate(sum=models.Sum('logdelta'))
     # 期間中の集計
-    log_sum = log.values('task').annotate(sum=models.Sum('logdelta'))
+    log_sum_task = log.values('task').annotate(sum=models.Sum('logdelta'))
     # 日付毎に集計
-    log = log.values('task','logdate').annotate(sum=models.Sum('logdelta'))
+    log_task = log.values('task','logdate').annotate(sum=models.Sum('logdelta'))
     
-    task_arr = [] # ログ一覧に表示するタスクごとの配列を詰める箱
-    task_dic = {} # タスクごとの配列(日毎のログを詰める)
-    log_arr = [] # 日毎のログ
-    task_id = None
-    for l in log:
-        # 合計時間のhh:mm:ss表示
-        l['sum_str'] = __sec_to_hhmmss_str(l['sum'])
-        # logdateは文字列変換して渡す
-        l['logdate'] = l['logdate'].strftime('%Y/%m/%d')
-        if task_id != l['task']:
-            task_id = l['task']
-            task = Task.objects.get(pk=l['task'])
-            # idが前回と異なる場合、task_dicを新たに作る
-            task_dic = {}
-            task_dic['task'] = l['task']
-            task_dic['name'] = task
-            task_dic['group'] = task.group
-            # log_arrを新たに作る
-            log_arr = []
-            for l_s in log_sum:
-                if l_s['task'] == l['task']:
-                    sum_dic = {}
-                    sum_dic['logdate'] = 'SUM'
-                    sum_dic['sum'] = l_s['sum']
-                    sum_dic['sum_str'] = __sec_to_hhmmss_str(l_s['sum'])
-                    log_arr.append(sum_dic)
-            log_arr.append(l)
-            task_dic['log_arr'] = log_arr
-            # 作ったtask_dicを詰める
-            task_arr.append(task_dic)
-        else:
-            # idが前回と同じ場合、task_arrの最後の要素を取り出し、
-            # log_arrのappendのみ実施して詰めなおす
-            task_dic = task_arr[-1]
-            log_arr = task_dic['log_arr']
-            log_arr.append(l)
-            task_dic['log_arr'] = log_arr
-            task_arr[-1] = task_dic
+    ret_arr = [] # ログ一覧に表示するグループごとのdicを詰める箱
+
+    print("log_sum_grp: " + str(log_sum_grp))
+    # グループ単位でループを回す
+    for g in log_sum_grp:
+        grp = Group.objects.get(pk=g['task__group'])
+        group_dic = {}
+        ret_arr.append(group_dic)
+        group_dic['group'] = grp.id
+        group_dic['name'] = grp.name
+        sum_arr = []
+        group_dic['sum_arr'] = sum_arr
+        # グループのサマリ行
+        grp_sum_dic = {}
+        sum_arr.append(grp_sum_dic)
+        grp_sum_dic['logdate'] = 'SUM'
+        grp_sum_dic['sum'] = g['sum']
+        grp_sum_dic['sum_str'] = __sec_to_hhmmss_str(g['sum'])
+        # グループのサマリ行の日付レコード(日数分の件数)
+        for l_g in log_grp:
+            if l_g['task__group'] == grp.id:
+                grp_log_dic = {}
+                sum_arr.append(grp_log_dic)
+                grp_log_dic['logdate'] = l_g['logdate'].strftime('%Y/%m/%d')
+                grp_log_dic['sum'] = l_g['sum']
+                grp_log_dic['sum_str'] = __sec_to_hhmmss_str(l_g['sum'])
+        task_arr = []
+        group_dic['task_arr'] = task_arr
+        for t in log_sum_task:
+            task = Task.objects.get(pk=t['task'])
+            # グループに属するタスクに対して処理
+            if task.group.id == grp.id:
+
+                task_dic = {}
+                task_arr.append(task_dic)
+                task_dic['task'] = task.id
+                task_dic['name'] = task.name
+                log_arr = []
+                task_dic['log_arr'] = log_arr
+                # タスクのサマリ行
+                task_sum_dic = {}
+                log_arr.append(task_sum_dic)
+                task_sum_dic['logdate'] = 'SUM'
+                task_sum_dic['sum'] = t['sum']
+                task_sum_dic['sum_str'] = __sec_to_hhmmss_str(t['sum'])
+                # タスクの日付毎レコード(日数分の件数)
+                for l_t in log_task:
+                    if l_t['task'] == task.id:
+                        task_log_dic = {}
+                        log_arr.append(task_log_dic)
+                        task_log_dic['logdate'] = l_t['logdate'].strftime('%Y/%m/%d')
+                        task_log_dic['sum'] = l_t['sum']
+                        task_log_dic['sum_str'] = __sec_to_hhmmss_str(l_t['sum'])
+
+
+        # # 合計時間のhh:mm:ss表示
+        # l['sum_str'] = __sec_to_hhmmss_str(l['sum'])
+        # # logdateは文字列変換して渡す
+        # l['logdate'] = l['logdate'].strftime('%Y/%m/%d')
+
+        # task = Task.objects.get(pk=l['task'])
+        # # グループが前回と異なる
+        # if group_id != task.group.id:
+        #     # 2件目以降のグループの場合
+        #     if len(ret_arr) > 0:
+        #         # 前のグループ分のサマリを文字列に変換して詰める
+        #         prev_group_dic = ret_arr[-1]
+        #         prev_group_dic['sum'] = __sec_to_hhmmss_str(group_sum)
+                
+        #     group_id = task.group.id
+        #     group_sum = l['sum']
+        #     # group_dicを新たに作る
+        #     group_dic = {}
+        #     ret_arr.append(group_dic)
+        #     group = task.group
+        #     group_dic['group'] = group.id
+        #     group_dic['name'] = group.name
+        #     # task_arrを新たに作る
+        #     task_arr = []
+        #     group_dic['task_arr'] = task_arr
+        #     task_dic = {}
+        #     task_arr.append(task_dic)
+        #     task_dic['task'] = task.id
+        #     task_dic['name'] = task.name
+        #     # log_arrを新たに作る
+        #     log_arr = []
+        #     task_dic['log_arr'] = log_arr
+        #     for l_s in log_sum:
+        #         if l_s['task'] == l['task']:
+        #             sum_dic = {}
+        #             sum_dic['logdate'] = 'SUM'
+        #             sum_dic['sum'] = l_s['sum']
+        #             sum_dic['sum_str'] = __sec_to_hhmmss_str(l_s['sum'])
+        #             log_arr.append(sum_dic)
+        #     log_arr.append(l)
+
+        # # groupのidが前回と同じ場合
+        # else:
+        #     group_sum += l['sum']
+        #     #group_arrの末尾のgroup_dic取り出し
+        #     group_dic = group_arr[-1]
+        #     task_arr = group_dic['task_arr']
+
+        #     # taskのidが前回と異なる場合
+        #     if task_id != task.id:
+        #         # task_dicを新たに作る
+        #         task_dic = {}
+        #         task_arr.append(task_dic)
+        #         task_dic['task'] = task.id
+        #         task_dic['name'] = task.name
+        #         # log_arrを新たに作る
+        #         log_arr = []
+        #         task_dic['log_arr'] = log_arr
+        #         for l_s in log_sum:
+        #             if l_s['task'] == l['task']:
+        #                 sum_dic = {}
+        #                 sum_dic['logdate'] = 'SUM'
+        #                 sum_dic['sum'] = l_s['sum']
+        #                 sum_dic['sum_str'] = __sec_to_hhmmss_str(l_s['sum'])
+        #         log_arr.append(sum_dic)
+        #     log_arr.append(l)
+
+        #     # taskのidが前回と同じ場合
+        #     else:
+
+
+        # if task_id != l['task']:
+        #     task_id = l['task']
+        #     task = Task.objects.get(pk=l['task'])
+        #     # idが前回と異なる場合、task_dicを新たに作る
+        #     task_dic = {}
+        #     task_dic['task'] = l['task']
+        #     task_dic['name'] = task
+        #     task_dic['group'] = task.group
+        #     # log_arrを新たに作る
+        #     log_arr = []
+        #     for l_s in log_sum:
+        #         if l_s['task'] == l['task']:
+        #             sum_dic = {}
+        #             sum_dic['logdate'] = 'SUM'
+        #             sum_dic['sum'] = l_s['sum']
+        #             sum_dic['sum_str'] = __sec_to_hhmmss_str(l_s['sum'])
+        #             log_arr.append(sum_dic)
+        #     log_arr.append(l)
+        #     task_dic['log_arr'] = log_arr
+        #     # 作ったtask_dicを詰める
+        #     task_arr.append(task_dic)
+        # else:
+        #     # idが前回と同じ場合、task_arrの最後の要素を取り出し、
+        #     # log_arrのappendのみ実施して詰めなおす
+        #     task_dic = task_arr[-1]
+        #     log_arr = task_dic['log_arr']
+        #     log_arr.append(l)
+        #     task_dic['log_arr'] = log_arr
+        #     task_arr[-1] = task_dic
            
 
-    # 同じタスクのログはまとめる
-    # [{'task':22,
-    #  'name':'testtask',
-    #  'group:'testgroup',
-    #  'log_arr': [{'logdate':'2018/05/24', 'sum':'100', 'sum_str':'00:01:40'},
-    #          {'logdate':'2018/05/26', 'sum':'120', 'sum_str':'00:02:00'},
+    # 同じグループ、タスクのログはまとめる
+    # [{'group':11,
+    #   'name':'testgroup',
+    #   'sum_arr': [{'logdate':'2018/05/24', 'sum':'200', 'sum_str': '00:03:20'},
+    #               {'logdate':'2018/05/25', 'sum':'250', 'sum_str': '00:04:10'},
     #         ]
-    # },{...}]
+    #   'task_arr':[
+    #    {'task':22,
+    #     'name':'testtask',
+    #     'log_arr': [{'logdate':'2018/05/24', 'sum':'100', 'sum_str':'00:01:40'},
+    #                 {'logdate':'2018/05/25', 'sum':'120', 'sum_str':'00:02:00'},
+    #         ]
+    #    },{...}]
+    # }]
 
     # 日付表示対象の日付
     log_date = df
@@ -485,8 +613,10 @@ def log_list_period(request):
     while log_date != dt:
         log_date = log_date + datetime.timedelta(days=1)
         date_arr.append(log_date.strftime('%Y/%m/%d'))
+    
+    print("ret_arr: " + str(ret_arr))
 
-    return render(request, 'app/log_list_period.html', {'task_arr': task_arr, 'date_arr': date_arr, 'unfinished_log': unfinished_log, 'type': type,})
+    return render(request, 'app/log_list_period.html', {'ret_arr': ret_arr, 'date_arr': date_arr, 'unfinished_log': unfinished_log, 'type': type,})
 
 # ログ1件分の情報を作成する
 def __create_log_dic(log_dic, l, fi_started, la_ended, sec_delta):

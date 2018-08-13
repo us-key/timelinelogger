@@ -103,33 +103,49 @@ $(function() {
 						{% for head_d in date_arr %}
 						<th class="text-center">
 							{% if head_d != 'SUM' %}
-							<a href="{% url 'log_list' %}?log_date={{ head_d|slash_to_dash }}">
+								<a href="{% url 'log_list' %}?log_date={{ head_d|slash_to_dash }}">
 							{% endif %}
-								{{ head_d }}
+							{{ head_d }}
 							{% if head_d != 'SUM' %}
-							</a>
+								</a>
 							{% endif %}
 						</th>
 						{% endfor %}
 					</tr>
 					<!-- log -->
-					{% for task_dic in task_arr %}
-					<tr>
-						<td>
-							<a href="{% url 'task_update' task_dic.task %}">
-								[{{ task_dic.group }}]{{ task_dic.name }}
-							</a>
-						</td>
-						{% for row_d in date_arr %}
-							<td class="log_cell text-center">
-							{% for l in task_dic.log_arr %}
-								{% if l.logdate == row_d %}
-									{{ l.sum_str }}
-								{% endif %}
-							{% endfor %}
+					{% for group_dic in ret_arr %}
+						<tr>
+							<td class="g_summary_row">
+								group:{{group_dic.name}}
 							</td>
+							{% for row_d in date_arr %}
+								<td class="g_summary_row text-center">
+									{% for g_s in group_dic.sum_arr %}
+										{% if g_s.logdate == row_d %}
+											{{g_s.sum_str}}
+										{% endif %}
+									{% endfor %}
+								</td>
+							{% endfor %}
+						</tr>
+						{% for task_dic in group_dic.task_arr %}
+							<tr>
+								<td>
+									<a href="{% url 'task_update' task_dic.task %}">
+										{{ task_dic.name }}
+									</a>
+								</td>
+								{% for row_d in date_arr %}
+									<td class="text-center">
+									{% for l in task_dic.log_arr %}
+										{% if l.logdate == row_d %}
+											{{ l.sum_str }}
+										{% endif %}
+									{% endfor %}
+									</td>
+								{% endfor %}
+							</tr>
 						{% endfor %}
-					</tr>
 					{% empty %}
 					<div class="col-12">
 						ログがありません
