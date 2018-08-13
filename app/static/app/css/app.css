@@ -14,6 +14,12 @@
 .even_row, .summary_row {
     background-color: rgba(0,0,0,.05);
 }
+.task_row, td.task_row {
+    padding-left: 25px;
+}
+.log_row {
+    padding-left: 35px;
+}
 .log_line {
     position: absolute;
     height: 100%;

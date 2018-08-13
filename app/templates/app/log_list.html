@@ -51,9 +51,9 @@
 					</div>
 				{% for task_dic in group_dic.task_arr %}
 						{% if forloop.counter0|divisibleby:"2" %}
-							<div class="col-3">
+							<div class="col-3 task_row">
 						{% else %}
-							<div class="col-3 even_row">
+							<div class="col-3 task_row even_row">
 						{% endif %}
 								<a href="{% url 'task_update' task_dic.task %}">
 									{{ task_dic.name }}
@@ -102,30 +102,29 @@
 					{% for task_dic in group_dic.task_arr %}
 						<!-- タスクサマリ行 -->
 						<div class="row">
-						<div class="col-7 summary_row">
+						<div class="col-7 summary_row task_row">
 							<a href="{% url 'task_update' task_dic.task %}">
 								{{ task_dic.name }}
 							</a>
 						</div>
-						<div class="col-3 summary_row">{{ task_dic.sum }}</div>
+						<div class="col-3 summary_row task_row">{{ task_dic.sum }}</div>
 						<div class="col-2 summary_row"></div>
 						</div>
 						{% for log_dic in task_dic.log_arr %}
 							<div class="row">
-							<div class="col-1"></div>
-							<div class="col-7"> 
+							<div class="col-7 log_row"> 
 								<a href="{% url 'log_update' log_dic.log %}">
 									{{ log_dic.started_str }}
 									~
 									{{ log_dic.ended_str }}
 								</a>
 							</div>
-							<div class="col-3">
+							<div class="col-3 log_row">
 								<a href="{% url 'log_update' log_dic.log %}">
 									{{ log_dic.delta_str }}
 								</a>
 							</div>
-							<div class="col-1">
+							<div class="col-2">
 								<a href="#" data-toggle="modal" data-target="#delModal" class="delModalId">
 									<input type="hidden" id="passedLogId" value={{ log_dic.log }} />
 									<span class="badge badge-danger badge-pill">
