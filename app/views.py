@@ -436,7 +436,6 @@ def log_list_period(request):
     
     ret_arr = [] # ログ一覧に表示するグループごとのdicを詰める箱
 
-    print("log_sum_grp: " + str(log_sum_grp))
     # グループ単位でループを回す
     for g in log_sum_grp:
         grp = Group.objects.get(pk=g['task__group'])
@@ -511,8 +510,6 @@ def log_list_period(request):
         log_date = log_date + datetime.timedelta(days=1)
         date_arr.append(log_date.strftime('%Y/%m/%d'))
     
-    print("ret_arr: " + str(ret_arr))
-
     return render(request, 'app/log_list_period.html', {'ret_arr': ret_arr, 'date_arr': date_arr, 'unfinished_log': unfinished_log, 'type': type,})
 
 # ログ1件分の情報を作成する
