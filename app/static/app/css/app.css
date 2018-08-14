@@ -8,8 +8,11 @@
 .pos_absolute {
     position: absolute;
 }
+.total_sum_row {
+    background-color: rgba(0,255,0,1);
+}
 .g_summary_row {
-    background-color: rgba(0, 255, 0, 0.5);
+    background-color: rgba(0, 255, 0, 0.3);
 }
 .even_row, .summary_row {
     background-color: rgba(0,0,0,.05);

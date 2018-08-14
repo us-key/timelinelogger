@@ -113,7 +113,23 @@ $(function() {
 						{% endfor %}
 					</tr>
 					<!-- log -->
-					{% for group_dic in ret_arr %}
+					{% if ret_dic.sum_arr %}
+						<tr>
+							<th class="total_sum_row">
+								SUM
+							</th>
+							{% for row_d in date_arr %}
+								<th class="total_sum_row text-center">
+									{% for t_s in ret_dic.sum_arr %}
+										{% if t_s.logdate == row_d %}
+											{{t_s.sum_str}}
+										{% endif %}
+									{% endfor %}
+								</th>
+							{% endfor %}
+						</tr>
+					{% endif%}
+					{% for group_dic in ret_dic.group_arr %}
 						<tr>
 							<td class="g_summary_row">
 								group:{{group_dic.name}}
@@ -136,7 +152,7 @@ $(function() {
 									</a>
 								</td>
 								{% for row_d in date_arr %}
-									<td class="text-center">
+									<td class="task_row text-center">
 									{% for l in task_dic.log_arr %}
 										{% if l.logdate == row_d %}
 											{{ l.sum_str }}
