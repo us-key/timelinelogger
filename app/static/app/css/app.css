@@ -10,6 +10,7 @@
 }
 .total_sum_row {
     background-color: rgba(0,255,0,1);
+    font-weight: bold;
 }
 .g_summary_row {
     background-color: rgba(0, 255, 0, 0.3);

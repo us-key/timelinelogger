@@ -45,7 +45,7 @@
 					{% endfor %}
 				</div>
 				<!-- タスク毎のタイムライン -->
-				{% for group_dic in ret_arr %}
+				{% for group_dic in ret_dic.group_arr %}
 					<div class="col-12 g_summary_row">
 						group:{{group_dic.name}}
 					</div>
@@ -92,7 +92,14 @@
 		<div class="card-body">
 			<h5 class="card-title">明細</h5>
 				<!-- 明細 -->
-				{% for group_dic in ret_arr %}
+				{% if ret_dic.group_arr %}
+					<div class="row">
+						<div class="col-7 total_sum_row">SUM</div>
+						<div class="col-3 total_sum_row">{{ ret_dic.sum }}</div>
+						<div class="col-2 total_sum_row"></div>
+					</div>
+				{% endif%}
+				{% for group_dic in ret_dic.group_arr %}
 					<!-- グループサマリ行 -->
 					<div class="row">
 					<div class="col-7 g_summary_row">group: {{ group_dic.name }}</div>
