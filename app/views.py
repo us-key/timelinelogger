@@ -69,13 +69,13 @@ class TaskCreateView(LoginRequiredMixin, CreateView):
         # message
         msg = task.name + 'を登録しました。'
         messages.success(self.request, msg)
-        return redirect('task_list')
+        return redirect('log_list')
 
 # task更新画面
 class TaskUpdateView(LoginRequiredMixin, UpdateView):
     model = Task
     form_class=TaskForm
-    success_url = reverse_lazy('task_list')
+    success_url = reverse_lazy('log_list')
 
     # @unfinishedLogChecker
     def get_form_kwargs(self):
@@ -93,12 +93,12 @@ class TaskUpdateView(LoginRequiredMixin, UpdateView):
         # message
         msg = task.name + 'を更新しました。'
         messages.success(self.request, msg)
-        return redirect('task_list')
+        return redirect('log_list')
 
 # task削除画面
 class TaskDeleteView(LoginRequiredMixin, DeleteView):
     model = Task
-    success_url = reverse_lazy('task_list')
+    success_url = reverse_lazy('log_list')
 
 # task完了
 @login_required
@@ -113,8 +113,9 @@ def task_finish(request, pk, flg):
         msg = task.name + 'を未完了にしました。'    
     task.save()
     # message
-    
     messages.success(request, msg)
+    
+    return redirect('log_list')
 
 # popup group登録画面
 class PopupGroupCreateView(LoginRequiredMixin, CreateView):

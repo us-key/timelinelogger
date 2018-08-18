@@ -22,11 +22,16 @@ def render_json_response(request, data, status=None):
 # TASKの一覧を返却
 def task_list(request):
     tasks = []
-    for task in Task.objects.filter(user=request.user.id).order_by('group'):
+    q_tasks = Task.objects.filter(user=request.user.id).order_by('finished','group',)
+    if request.GET['finishedTaskFlg'] == '0':
+        q_tasks = q_tasks.filter(finished=0)
+    for task in q_tasks:
+
         task_dict = OrderedDict([
             ('id', task.id),
             ('name', task.name),
             ('group', task.group.name),
+            ('finished', '1' if task.finished else '0'),
             ])
         tasks.append(task_dict)
 

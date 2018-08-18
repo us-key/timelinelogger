@@ -24,7 +24,96 @@
 	<script>
 		$(function(){
 			$('.flashmsg').delay(2500).fadeOut(500);
+			// タスクリストモーダル起動時にajaxでタスクリスト取得
+			$('#taskListModalLink').on('click', function(){
+				if($('#task-list').html() != "") {
+					return;
+				}
+				// トグルボタンの選択状態を取得
+				var radioVal = $('label.active').children().val();
+
+				getTaskList(radioVal);
+			});
+			$('input[name="options"]:radio').on('change', function(){
+				if($('#task-list').html() != "") {
+					$('#task-list').empty();
+				}
+				var radioVal = $(this).val();
+				getTaskList(radioVal);
+			});
 		});
+		// 
+		function getTaskList(radioVal) {
+			
+			$.ajax({
+				url: '/api/v1/tasks/',
+				method: 'GET',
+				timeout: 10000,
+				data: {
+					'finishedTaskFlg': radioVal
+				},
+				success: function(resp){
+					if (resp.tasks.length == 0) {
+						$('#task-list').append('<p>タスクはありません。</p>');
+					} else {
+						resp.tasks.forEach(function(task){
+							if(task.finished == "1"){
+								$('#task-list').append(
+									  common_html_1(task)
+									+	'<span class="badge badge-secondary badge-pill">済</span>'
+									+ common_html_2()
+									+   '<a href="/task/finish/' + task.id + '/0">'
+									+		'<span class="badge badge-secondary badge-pill">'
+									+			'未完了に戻す'
+									+		'</span>'
+									+	'</a>'
+									+ common_html_3(task)
+								);
+							} else {
+								$('#task-list').append(
+									  common_html_1(task)
+									+	'<a href="javascript:void(0);"'
+									+	'onclick="window.open(' + '\'/task_stopwatch/c/' + task.id +  '\',\'subwin\',\'width=500,height=500\');">'
+									+		'<span class="badge badge-primary badge-pill">'
+									+			'▶'
+									+		'</span>'
+									+ 	'</a>'
+									+ common_html_2()
+									+	'<a href="/task/finish/' + task.id + '/1">'
+									+		'<span class="badge badge-primary badge-pill">'
+									+			'✔'
+									+		'</span>'
+									+	'</a>'
+									+ common_html_3(task)
+								);
+							}
+						});
+					}
+				}
+			});
+		}
+		// html生成の共通部分を切り出し
+		function common_html_1(task){
+			var str =	'<div class="list-group-item d-flex flex-column align-item-start list-group-item-action">'
+					+		'<div class="d-flex justify-content-between task-row">'
+					+			'<h5 class="mb-1">'
+					+				'<a href="/task/update/' + task.id + '">'
+					+					'[' + task.group + ']' + task.name
+					+				'</a>'
+					+			'</h5>';
+			return str;	
+			}
+		function common_html_2() {
+			return '</div><div>';
+		}	
+		function common_html_3(task) {
+			var str = 	'<a href="/task/delete/' + task.id +  '">'
+					+		'<span class="badge badge-danger badge-pill">'
+					+			'×'
+					+		'</span>'
+					+	'</a>';
+			return str;
+		}
 		function add_log(name, pk){
 			location.reload();
 		}
@@ -51,6 +140,42 @@
 			<div {% if message.tags %} class="flashmsg alert alert-{{message.tags}}"{% endif %}>{{ message }}</div>
 			{% endfor %}
 		{% endif %}
+	</div>
+	<!-- タスク一覧モーダル -->
+	<div class="modal fade" id="taskListModal" tabindex="-1" role="dialog" aria-labelledby="taskListModalLabel" aria-hidden="true">
+		<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="taskListModalLabel">
+							タスク一覧
+						</h5>
+						<button type="button" class="close" data-dismiss="modal" aria-label="close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<input type="hidden" value=""
+						<div>
+							<a class="btn btn-primary" href="{% url 'task_create' %}">追加</a>
+							<div class="float-right">
+								完了済表示
+								<div class="btn-group btn-group-toggle" data-toggle="buttons">
+									<label id="flgOn" class="btn btn-outline-secondary">
+										<input type="radio" name="options" id="option1" autocomplete="off" value="1">ON
+									</label>
+									<label id="flgOff" class="btn btn-outline-secondary active">
+										<input type="radio" name="options" id="option2" autocomplete="off" value="0">OFF
+									</label>
+								</div>
+							</div>
+						</div>
+						<div id="task-list"></div>
+					</div>
+					<div class="modal-footer">
+					</div>
+				</div>
+			</form>
+		</div>
 	</div>
 	{% block content %}
 	{% endblock %}

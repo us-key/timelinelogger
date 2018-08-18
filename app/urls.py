@@ -5,7 +5,7 @@ from . import views
 
 urlpatterns = [
     # index
-    path('', TaskListView.as_view(), name='task_list'),
+    path('', views.log_list, name='index'),
     # login
     path('login/', auth_views.login, {'template_name': 'app/login.html'}, name='login'),
     # logout
