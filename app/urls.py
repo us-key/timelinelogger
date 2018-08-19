@@ -15,8 +15,6 @@ urlpatterns = [
     # user削除画面
     path('user/delete/<int:pk>', UserDeleteView.as_view(), name='user_delete'),
 
-    # task一覧画面
-    path('task/', TaskListView.as_view(), name='task_list'),
     # task登録画面
     path('task/create/', TaskCreateView.as_view(), name='task_create'),
     # task更新画面

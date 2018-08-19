@@ -37,17 +37,6 @@ class UserDeleteView(LoginRequiredMixin, DeleteView):
 class TaskListView(LoginRequiredMixin, ListView):
     model = Task
     
-#    @unfinishedLogChecker
-    def get_queryset(self):
-        print("----------[TaskListView#get_queryset]start-----------")
-        result = Task.objects.filter(user=self.request.user.id).order_by('finished', 'group',)
-
-        # 「完了含む」を押したとき以外
-        if self.request.GET.get('contain_fin') != "1":
-            result = result.filter(finished = False)
-
-        return result
-
 # task登録画面
 class TaskCreateView(LoginRequiredMixin, CreateView):
     model = Task
