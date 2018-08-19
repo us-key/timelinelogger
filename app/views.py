@@ -33,10 +33,6 @@ class UserDeleteView(LoginRequiredMixin, DeleteView):
     model = User
     success_url = reverse_lazy('login')
 
-# task一覧画面
-class TaskListView(LoginRequiredMixin, ListView):
-    model = Task
-    
 # task登録画面
 class TaskCreateView(LoginRequiredMixin, CreateView):
     model = Task
