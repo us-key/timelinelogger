@@ -41,10 +41,34 @@
 				var radioVal = $(this).val();
 				getTaskList(radioVal);
 			});
+			// タスク削除モーダル起動
+			$(document).on('click', '.delTaskModalId', function(e){
+				var passVal = $(this).parent().find('#passedTaskId').val();
+				$('#delTaskId').val(passVal);
+			});
+			// タスク削除ボタン
+			$('#delTaskBtn').on('click', function(e){
+				var delTaskId = $('#delTaskId').val();
+				taskUpdAjax(delTaskId, 'del');
+				$('#delTaskModal').modal('hide');
+			});
+			// タスク完了化
+			$(document).on('click', '.finTask',function(e){
+				// タスクIDの取得
+				var passVal = $(this).parent().find('#passedTaskId').val();
+				taskUpdAjax(passVal, 'fin', '1');
+				return false;
+			});
+			// タスク未完了化
+			$(document).on('click', '.unfinTask', function(e){
+				// タスクIDの取得
+				var passVal = $(this).parent().find('#passedTaskId').val();
+				taskUpdAjax(passVal, 'fin', '0');
+				return false;
+			});	
 		});
-		// 
+		// ajax_タスクリスト取得
 		function getTaskList(radioVal) {
-			
 			$.ajax({
 				url: '/api/v1/tasks/',
 				method: 'GET',
@@ -61,13 +85,13 @@
 								$('#task-list').append(
 									  common_html_1(task)
 									+	'<span class="badge badge-secondary badge-pill">済</span>'
-									+ common_html_2()
-									+   '<a href="/task/finish/' + task.id + '/0">'
+									+ common_html_2(task)
+									+   '<a href="" class="unfinTask">'
 									+		'<span class="badge badge-secondary badge-pill">'
 									+			'未完了に戻す'
 									+		'</span>'
 									+	'</a>'
-									+ common_html_3(task)
+									+ common_html_3()
 								);
 							} else {
 								$('#task-list').append(
@@ -78,13 +102,13 @@
 									+			'▶'
 									+		'</span>'
 									+ 	'</a>'
-									+ common_html_2()
-									+	'<a href="/task/finish/' + task.id + '/1">'
+									+ common_html_2(task)
+									+	'<a href="" class="finTask">'
 									+		'<span class="badge badge-primary badge-pill">'
 									+			'✔'
 									+		'</span>'
 									+	'</a>'
-									+ common_html_3(task)
+									+ common_html_3()
 								);
 							}
 						});
@@ -103,16 +127,57 @@
 					+			'</h5>';
 			return str;	
 			}
-		function common_html_2() {
-			return '</div><div>';
+		function common_html_2(task) {
+			var str = '</div><div>'
+					+    '<input type="hidden" id="passedTaskId" value="' + task.id + '"/>';
+			return str;
 		}	
-		function common_html_3(task) {
-			var str = 	'<a href="/task/delete/' + task.id +  '">'
+		function common_html_3() {
+			var str = 	'<a href="" data-toggle="modal" data-target="#delTaskModal" class="delTaskModalId">'
 					+		'<span class="badge badge-danger badge-pill">'
 					+			'×'
 					+		'</span>'
 					+	'</a>';
 			return str;
+		}
+		// ajax_タスク削除/完了
+		function taskUpdAjax(taskId, funcName, setFinished) {
+			var url = (funcName=='del' ? '/api/v1/task/del/' : '/api/v1/task/fin/');
+			var data = (funcName=='del'
+				? {'taskId': taskId}
+				: {'taskId': taskId,
+				   'setFinished':setFinished}
+					)
+			$.ajax({
+				url: url,
+				method: 'GET',
+				timeout: 10000,
+				data: data,
+				success: function(resp) {
+					// 削除確認モーダル閉じる
+					$('delTaskModal').modal('hidden');
+
+					// タスクリスト再表示
+					if($('#task-list').html() != "") {
+						$('#task-list').empty();
+					}
+					var radioVal = $('label.active').children().val();
+					getTaskList(radioVal);
+
+					// returncodeによってメッセージ表示
+					var str = '<div class="flashmsg alert alert-'
+					if (resp.returncode == '0') {
+						str += 'success';
+					} else {
+						str += 'danger';
+					}
+					str += ('">' + resp.msg + '</div>');	
+					// メッセージ表示
+					$('#modalFlashmsg').empty();
+					$('#modalFlashmsg').append(str);
+					$('#modalFlashmsg').children().delay(2500).fadeOut(500);
+				}
+			})
 		}
 		function add_log(name, pk){
 			location.reload();
@@ -154,7 +219,7 @@
 						</button>
 					</div>
 					<div class="modal-body">
-						<input type="hidden" value=""
+						<div id="modalFlashmsg"></div>
 						<div>
 							<a class="btn btn-primary" href="{% url 'task_create' %}">追加</a>
 							<div class="float-right">
@@ -177,6 +242,33 @@
 			</form>
 		</div>
 	</div>
+	<!-- タスク削除確認モーダル -->
+	<div class="modal fade" id="delTaskModal" tabindex="-1" role="dialog" aria-labelledby="delTaskModalLabel" aria-hidden="true">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="delTaskModalLabel">
+						確認
+					</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					削除しますか？
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-outline-secondary"data-dismiss="modal">戻る</button>
+					<button type="button" class="btn btn-danger" id="delTaskBtn">削除</button>
+				</div>
+				<div>
+					<!-- 隠し：タスクのID -->
+					<input type="hidden" name="delTaskId" id="delTaskId" />
+				</div>
+			</div>
+		</div>
+	</div>
+	
 	{% block content %}
 	{% endblock %}
 	<script src="{% static 'app/js/app.js' %}"></script>

@@ -37,3 +37,43 @@ def task_list(request):
 
     data = OrderedDict([('tasks', tasks)])
     return render_json_response(request, data)
+
+# TASKを削除する
+def del_task(request):
+    task = Task.objects.get(pk=request.GET['taskId'])
+    returncode = 0
+    msg = ""
+    if task:
+        task.delete()
+        msg = task.name + "を削除しました。"
+
+    else:
+        # エラーを返却
+        returncode = 1
+        msg = "削除できませんでした。再実行してください。"
+
+    data = {'returncode':returncode, 'msg':msg}
+    return render_json_response(request, data)
+
+# TASKを完了/未完了にする
+def fin_task(request):
+    task = Task.objects.get(pk=request.GET['taskId'])
+    returncode = 0
+    msg = ""
+    if task:
+        msg = task.name
+        if request.GET['setFinished']=='1':
+            task.finished = True 
+            msg += " を完了にしました。"
+        else:
+            task.finished = False
+            msg += " を未完了に戻しました。"
+        task.save()
+
+    else:
+        # エラーを返却
+        returncode = 1
+        msg = "変更できませんでした。再実行してください。"
+
+    data = {'returncode':returncode, 'msg':msg}
+    return render_json_response(request, data)
