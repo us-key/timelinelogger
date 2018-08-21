@@ -1,6 +1,6 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
-from .views import UserCreateView,UserDeleteView,TaskCreateView,TaskUpdateView,TaskDeleteView,PopupGroupCreateView
+from .views import UserCreateView,UserDeleteView,TaskCreateView,TaskUpdateView,PopupGroupCreateView
 from . import views
 
 urlpatterns = [
@@ -19,8 +19,6 @@ urlpatterns = [
     path('task/create/', TaskCreateView.as_view(), name='task_create'),
     # task更新画面
     path('task/update/<int:pk>', TaskUpdateView.as_view(), name='task_update'),
-    # task削除画面
-    path('task/delete/<int:pk>', TaskDeleteView.as_view(), name='task_delete'),
     # task完了
     path('task/finish/<int:pk>/<int:flg>', views.task_finish, name='task_finish'),
 

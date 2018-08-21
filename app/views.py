@@ -80,11 +80,6 @@ class TaskUpdateView(LoginRequiredMixin, UpdateView):
         messages.success(self.request, msg)
         return redirect('log_list')
 
-# task削除画面
-class TaskDeleteView(LoginRequiredMixin, DeleteView):
-    model = Task
-    success_url = reverse_lazy('log_list')
-
 # task完了
 @login_required
 def task_finish(request, pk, flg):
