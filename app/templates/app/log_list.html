@@ -51,11 +51,14 @@
 					</div>
 				{% for task_dic in group_dic.task_arr %}
 						{% if forloop.counter0|divisibleby:"2" %}
-							<div class="col-3 task_row">
+							<div class="col-3 task_row task_col">
 						{% else %}
-							<div class="col-3 task_row even_row">
+							<div class="col-3 task_row task_col even_row ">
 						{% endif %}
-								<a href="{% url 'task_update' task_dic.task %}">
+								<a href="{% url 'task_update' task_dic.task %}" 
+								   data-toggle="tooltip"
+								   data-placement="top"
+								   title="{{ task_dic.name }}">
 									{{ task_dic.name }}
 								</a>
 							</div>
@@ -91,58 +94,62 @@
 	<div class="card">
 		<div class="card-body">
 			<h5 class="card-title">明細</h5>
-				<!-- 明細 -->
-				{% if ret_dic.group_arr %}
-					<div class="row">
-						<div class="col-7 total_sum_row">SUM</div>
-						<div class="col-3 total_sum_row">{{ ret_dic.sum }}</div>
-						<div class="col-2 total_sum_row"></div>
-					</div>
-				{% endif%}
-				{% for group_dic in ret_dic.group_arr %}
-					<!-- グループサマリ行 -->
-					<div class="row">
-					<div class="col-7 g_summary_row">group: {{ group_dic.name }}</div>
-					<div class="col-3 g_summary_row">{{ group_dic.sum }}</div>
-					<div class="col-2 g_summary_row"></div>
-					</div>
-					{% for task_dic in group_dic.task_arr %}
-						<!-- タスクサマリ行 -->
-						<div class="row">
-						<div class="col-7 summary_row task_row">
-							<a href="{% url 'task_update' task_dic.task %}">
-								{{ task_dic.name }}
-							</a>
-						</div>
-						<div class="col-3 summary_row task_row">{{ task_dic.sum }}</div>
-						<div class="col-2 summary_row"></div>
-						</div>
-						{% for log_dic in task_dic.log_arr %}
-							<div class="row">
-							<div class="col-7 log_row"> 
-								<a href="{% url 'log_update' log_dic.log %}">
-									{{ log_dic.started_str }}
-									~
-									{{ log_dic.ended_str }}
-								</a>
-							</div>
-							<div class="col-3 log_row">
-								<a href="{% url 'log_update' log_dic.log %}">
-									{{ log_dic.delta_str }}
-								</a>
-							</div>
-							<div class="col-2">
-								<a href="#" data-toggle="modal" data-target="#delModal" class="delModalId">
-									<input type="hidden" id="passedLogId" value={{ log_dic.log }} />
-									<span class="badge badge-danger badge-pill">
-										<span aria-hidden="true">&times;</span>
-									</span>
-								</a>
-							</div>
-							</div>
+			<div class="row">
+				<table class="table table-striped table-sm table-responsive">
+					<!-- 明細 -->
+					{% if ret_dic.group_arr %}
+						<tr>
+							<th class="total_sum_row">SUM</th>
+							<th class="total_sum_row">{{ ret_dic.sum }}</th>
+							<th class="total_sum_row"></th>
+						</tr>
+					{% endif%}
+					{% for group_dic in ret_dic.group_arr %}
+						<!-- グループサマリ行 -->
+						<tr>
+							<td class="g_summary_row">group: {{ group_dic.name }}</td>
+							<td class="g_summary_row">{{ group_dic.sum }}</td>
+							<td class="g_summary_row"></td>
+						</tr>
+						{% for task_dic in group_dic.task_arr %}
+							<!-- タスクサマリ行 -->
+							<tr>
+								<td class="summary_row task_row task_col">
+									<a href="{% url 'task_update' task_dic.task %}">
+										{{ task_dic.name }}
+									</a>
+								</td>
+								<td class="summary_row task_row">{{ task_dic.sum }}</td>
+								<td class="summary_row"></td>
+							</tr>
+							{% for log_dic in task_dic.log_arr %}
+								<tr>
+									<td class="log_row"> 
+										<a href="{% url 'log_update' log_dic.log %}">
+											{{ log_dic.started_str }}
+											~
+											{{ log_dic.ended_str }}
+										</a>
+									</td>
+									<td class="log_row">
+										<a href="{% url 'log_update' log_dic.log %}">
+											{{ log_dic.delta_str }}
+										</a>
+									</td>
+									<td>
+										<a href="#" data-toggle="modal" data-target="#delModal" class="delModalId">
+											<input type="hidden" id="passedLogId" value={{ log_dic.log }} />
+											<span class="badge badge-danger badge-pill">
+												<span aria-hidden="true">&times;</span>
+											</span>
+										</a>
+									</td>
+								</tr>
+							{% endfor %}
 						{% endfor %}
 					{% endfor %}
-				{% endfor %}
+				</table>
+			</div>
 		</div>
 	</div>
 </div>

@@ -12,17 +12,26 @@
     background-color: rgba(0,255,0,1);
     font-weight: bold;
 }
-.g_summary_row {
+.g_summary_row, .table .g_summary_row {
     background-color: rgba(0, 255, 0, 0.3);
+    padding-left: .3rem;
 }
 .even_row, .summary_row {
     background-color: rgba(0,0,0,.05);
 }
-.task_row, td.task_row {
-    padding-left: 25px;
+.task_row, .table .task_row {
+    padding-left: .45rem;
+}
+.task_col {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
 }
 .log_row {
     padding-left: 35px;
+}
+.table .log_row {
+    padding-left: .6rem;
 }
 .log_line {
     position: absolute;
