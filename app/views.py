@@ -289,6 +289,13 @@ def log_list(request):
                 fi_started = st_sec
             if la_ended < ed_sec:
                 la_ended = ed_sec
+        
+        # 最初の開始時刻～最後の終了時刻が1時間未満、かつ時分秒の"時"が同じ場合
+        # 時間軸をX:00:00~Y:00:00にする(時間軸を表示させるための措置)
+        if la_ended - fi_started < 60*60 and (fi_started // (60*60)) == (la_ended // (60*60)):
+            hour = fi_started // (60*60)
+            la_ended = (hour+1)*60*60 
+            fi_started = hour*60*60
 
         sec_delta = la_ended - fi_started # 時間軸の幅の基準になる秒数
         print("fi_started:" + str(fi_started) + " la_ended:" + str(la_ended) + " sec_delta:" + str(sec_delta))
