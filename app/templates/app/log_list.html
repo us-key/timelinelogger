@@ -115,7 +115,10 @@
 							<!-- タスクサマリ行 -->
 							<tr>
 								<td class="summary_row task_row task_col">
-									<a href="{% url 'task_update' task_dic.task %}">
+									<a href="{% url 'task_update' task_dic.task %}"								   data-toggle="tooltip"
+									   data-toggle="tooltip"
+									   data-placement="top"
+									   title="{{ task_dic.name }}">
 										{{ task_dic.name }}
 									</a>
 								</td>
